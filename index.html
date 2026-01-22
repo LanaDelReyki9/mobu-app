@@ -6,24 +6,32 @@
     <title>モブ君アプリ</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<!-- A-1: ウェルカム画面 -->
-<div id="screen-welcome" class="screen active">
-    <div class="welcome-content">
-        <h1>モブ君アプリ</h1>
-        <p>画面をタップしてスタート</p>
+<body>
+    <!-- 動画による瞬き演出オーバーレイ -->
+    <div id="video-overlay">
+        <!-- muted playsinline は自動再生に必須 -->
+        <video id="blink-video" src="assets/blink_transition.mp4" muted playsinline></video>
     </div>
-</div>
 
-<!-- A-2: 名前入力画面 -->
-<div id="screen-name" class="screen">
-    <div class="container">
-        <h2>あなたのニックネームを教えてください</h2>
-        <input type="text" id="nickname-input" placeholder="ニックネーム（最大10文字）">
-        <p class="error-message" id="error-message"></p>
-        <button class="btn-primary">次へ</button>
+    <!-- A-1: ウェルカム画面 -->
+    <div id="screen-welcome" class="screen active">
+        <div class="welcome-content">
+            <h1>モブ君アプリ</h1>
+            <p>画面をタップしてスタート</p>
+        </div>
     </div>
-</div>
-<!-- A-3: タスク選択画面 -->
+
+    <!-- A-2: 名前入力画面 -->
+    <div id="screen-name" class="screen">
+        <div class="container">
+            <h2>あなたのニックネームを教えてください</h2>
+            <input type="text" id="nickname-input" placeholder="ニックネーム（最大10文字）">
+            <p class="error-message" id="error-message"></p>
+            <button class="btn-primary">次へ</button>
+        </div>
+    </div>
+
+    <!-- A-3: タスク選択画面 -->
     <div id="screen-task-select" class="screen">
         <div class="container">
             <h2>あなたの目標を3つ選んでください</h2>
@@ -44,6 +52,7 @@
             <button class="btn-primary" disabled>これで決定</button>
         </div>
     </div>
+
     <!-- B-1: ホーム画面 -->
     <div id="screen-home" class="screen">
         <div class="container">
@@ -71,24 +80,34 @@
             </div>
         </div>
     </div>
+
+    <!-- B-2: タスク報告画面 -->
+    <div id="screen-report" class="screen">
+        <div class="container">
+            <div class="viewpoint-bg"></div>
+            <div class="thought-bubble-container">
+                <p id="report-thought-text" class="thought-text">よし、完了！モブ君に報告しよっと♪</p>
+                <div id="report-selection-area" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
     <!-- B-3: プロフィール画面 -->
     <div id="screen-profile" class="screen">
         <div class="container">
             <h2>プロフィール</h2>
-            
             <div class="profile-stats">
                 <p><strong>ニックネーム:</strong> (未設定)</p>
                 <p><strong>タスク総達成回数:</strong> 0回</p>
                 <p><strong>累計プレイ日数:</strong> 0日</p>
             </div>
-
             <div class="teddy-placeholder">
                 <p>テディベア(後で実装)</p>
             </div>
-
             <button class="btn-primary">ホームに戻る</button>
         </div>
     </div>
+
     <!-- C-2: LINE画面 -->
     <div id="screen-line" class="screen">
         <div class="line-container">
@@ -96,7 +115,6 @@
                 <img src="assets/icon_back_24.svg" alt="戻る">
                 <span>モブ君</span>
             </div>
-            
             <div class="line-chat">
                 <div class="line-message mobu">
                     <p>こんにちは！</p>
@@ -105,12 +123,12 @@
                     <p>こんにちは</p>
                 </div>
             </div>
-
             <div class="line-input-area">
                 <p>(入力エリア - 後で実装)</p>
             </div>
         </div>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>

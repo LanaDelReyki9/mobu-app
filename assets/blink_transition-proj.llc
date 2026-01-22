@@ -1,0 +1,16 @@
+{
+  version: 1,
+  mediaFileName: 'blink_transition.mp4',
+  cutSegments: [
+    {
+      start: 23.68831168831169,
+      end: 25.184415584415582,
+      name: '',
+    },
+    {
+      start: 27.864935064935068,
+      end: 30.730223,
+      name: '',
+    },
+  ],
+}

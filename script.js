@@ -1,224 +1,191 @@
+// ===============================================
+// UI Component: Video Blink Control (動画瞬き)
+// ===============================================
+
+function playBlinkVideo(onDarkMoment) {
+    const overlay = document.getElementById('video-overlay');
+    const video = document.getElementById('blink-video');
+    
+    if (!overlay || !video) {
+        // 動画がない、またはHTML設定ミスの場合は即実行
+        console.warn("動画が見つかりません。通常遷移します。");
+        if (onDarkMoment) onDarkMoment();
+        return;
+    }
+
+    // 1. オーバーレイを表示して動画再生開始
+    overlay.classList.add('active');
+    video.currentTime = 0;
+    
+    // 再生試行（ブラウザによっては自動再生ブロックの可能性あり）
+    const playPromise = video.play();
+    if (playPromise !== undefined) {
+        playPromise.catch(error => {
+            console.error("動画再生エラー:", error);
+            // 再生できない場合は即座に遷移
+            if (onDarkMoment) onDarkMoment();
+        });
+    }
+
+    // 2. 「真っ暗になるタイミング」で画面遷移を実行
+    // ここでは0.5秒後としていますが、動画に合わせて調整可能です
+    setTimeout(() => {
+        if (onDarkMoment) onDarkMoment();
+    }, 500); 
+
+    // 3. 動画終了時にオーバーレイを隠す
+    video.onended = () => {
+        overlay.classList.remove('active');
+    };
+}
+
+// ===============================================
+// アプリ本体ロジック
+// ===============================================
+
 // 画面遷移関数
 function showScreen(screenId) {
-    // すべての画面からactiveクラスを削除
     document.querySelectorAll('.screen').forEach(screen => {
         screen.classList.remove('active');
     });
-    // 指定された画面にactiveクラスを追加
     const targetScreen = document.getElementById(screenId);
     if (targetScreen) {
         targetScreen.classList.add('active');
+        window.scrollTo(0, 0);
     }
 }
 
-// 一意のユーザーIDを生成
+// 一意のユーザーID生成
 function generateUserId() {
     return 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 }
 
-// B-1: ホーム画面のタスク表示を更新する関数
+// ホーム画面更新
 function updateHomeTasks() {
     const storedTasks = localStorage.getItem('selectedTasks');
     if (storedTasks) {
         const tasks = JSON.parse(storedTasks);
-        
-        // ホーム画面のラベル要素を取得
         const homeLabels = document.querySelectorAll('.task-chip-home label');
         const homeInputs = document.querySelectorAll('.task-chip-home input');
         
-        // 取得したタスク名をラベルに反映し、チェックをリセット
         tasks.forEach((taskName, index) => {
-            if (homeLabels[index]) {
-                homeLabels[index].textContent = taskName;
-            }
+            if (homeLabels[index]) homeLabels[index].textContent = taskName;
             if (homeInputs[index]) {
                 homeInputs[index].value = taskName;
-                homeInputs[index].checked = false; // 初期化
+                homeInputs[index].checked = false;
             }
         });
     }
 }
 
-// ニックネーム入力のバリデーション
+// バリデーションと初期化
 const nicknameInput = document.getElementById('nickname-input');
 const errorMessage = document.getElementById('error-message');
 const nameScreenButton = document.querySelector('#screen-name .btn-primary');
 
-// 要素が存在する場合のみイベントを設定
 if (nicknameInput) {
     nicknameInput.addEventListener('input', function() {
         const value = this.value;
-        
-        // 全角・半角の特殊記号チェック（#、@、%）
         const invalidChars = /[#@%＃＠％]/u;
         if (invalidChars.test(value)) {
             errorMessage.textContent = '絵文字や特殊記号は使えません';
             nameScreenButton.disabled = true;
             return;
         }
-        
-        // 文字数チェック
-        if (value.length === 0) {
-            errorMessage.textContent = '';
+        if (value.length === 0 || value.length > 10) {
+            errorMessage.textContent = value.length > 10 ? '10文字以内で' : '';
             nameScreenButton.disabled = true;
             return;
         }
-        
-        if (value.length > 10) {
-            errorMessage.textContent = '10文字以内で入力してください';
-            nameScreenButton.disabled = true;
-            return;
-        }
-        
-        // OK
         errorMessage.textContent = '';
         nameScreenButton.disabled = false;
     });
 
-    // 次へボタンのクリックイベント
     nameScreenButton.addEventListener('click', function() {
         const nickname = nicknameInput.value.trim();
+        if (nickname.length === 0 || nickname.length > 10) return;
         
-        // バリデーション再チェック
-        if (nickname.length === 0 || nickname.length > 10) {
-            return;
-        }
-        
-        const invalidChars = /[#@%＃＠％]/u;
-        if (invalidChars.test(nickname)) {
-            return;
-        }
-        
-        // ニックネームをLocalStorageに保存
         localStorage.setItem('nickname', nickname);
-        
-        // ユーザーIDが存在しない場合は生成して保存
         if (!localStorage.getItem('userId')) {
-            const userId = generateUserId();
-            localStorage.setItem('userId', userId);
+            localStorage.setItem('userId', generateUserId());
         }
-        
-        // A-3（タスク選択画面）へ遷移
         showScreen('screen-task-select');
     });
 }
 
-// タスク選択制御
-const taskSelectButton = document.getElementById('task-select-button');
+// タスク選択画面
 const taskCheckboxes = document.querySelectorAll('#screen-task-select input[type="checkbox"]');
+const taskSelectBtnAlt = document.querySelector('#screen-task-select .btn-primary');
+// IDがあれば取得、なければAltを使用
+const taskSelectButton = document.getElementById('task-select-button') || taskSelectBtnAlt;
 
-// タスク選択数の制御（最大3つ）
 taskCheckboxes.forEach(checkbox => {
     checkbox.addEventListener('change', function() {
         const checkedCount = document.querySelectorAll('#screen-task-select input[type="checkbox"]:checked').length;
-        
-        // 3つを超えて選択しようとした場合、最後に選択したものを無効化
         if (checkedCount > 3) {
             this.checked = false;
             return;
         }
-        
-        // 選択数に応じてボタンの有効/無効を切り替え
-        if (checkedCount === 3) {
-            taskSelectButton.disabled = false;
-        } else {
-            taskSelectButton.disabled = true;
+        if (taskSelectButton) {
+            taskSelectButton.disabled = (checkedCount !== 3);
         }
     });
 });
 
-// 「これで決定」ボタンのクリックイベント
 if (taskSelectButton) {
     taskSelectButton.addEventListener('click', function() {
-        // 選択されたタスクを取得
         const selectedTasks = [];
         taskCheckboxes.forEach(checkbox => {
             if (checkbox.checked) {
-                selectedTasks.push(checkbox.value);
+                selectedTasks.push(checkbox.parentElement.querySelector('label').textContent);
             }
         });
-        
-        // 3つ選択されていることを確認
-        if (selectedTasks.length !== 3) {
-            return;
-        }
-        
-        // 選択されたタスクをLocalStorageに保存
+        if (selectedTasks.length !== 3) return;
         localStorage.setItem('selectedTasks', JSON.stringify(selectedTasks));
-        
-        // ホーム画面の内容を更新
         updateHomeTasks();
-
-        // B-1（ホーム画面）へ遷移
         showScreen('screen-home');
     });
 }
 
-// B-1: ホーム画面の完了ボタン制御
+// ホーム画面：完了ボタン制御
 const homeTaskCheckboxes = document.querySelectorAll('.task-chip-home input[type="checkbox"]');
 const homeCompleteButton = document.querySelector('#screen-home .btn-primary');
 
 homeTaskCheckboxes.forEach(checkbox => {
     checkbox.addEventListener('change', function() {
-        // チェックされている数をカウント
         const checkedCount = document.querySelectorAll('.task-chip-home input[type="checkbox"]:checked').length;
-        
-        // 1つ以上チェックがあればボタンを有効化、なければ無効化
-        if (checkedCount > 0) {
-            homeCompleteButton.disabled = false;
-        } else {
-            homeCompleteButton.disabled = true;
+        if (homeCompleteButton) {
+            homeCompleteButton.disabled = (checkedCount === 0);
         }
     });
 });
 
-// ホーム画面の「完了」ボタンクリック時の処理
+// ホーム画面：完了ボタンクリック（動画演出実行）
 if (homeCompleteButton) {
     homeCompleteButton.addEventListener('click', function() {
-        // チェックされたタスクの内容を取得（ログ用）
-        const completedTasks = [];
-        document.querySelectorAll('.task-chip-home input[type="checkbox"]:checked').forEach(checkbox => {
-            const taskName = checkbox.parentElement.querySelector('label').textContent;
-            completedTasks.push(taskName);
+        // 動画演出を開始し、暗転したタイミングで画面遷移
+        playBlinkVideo(() => {
+            showScreen('screen-report');
         });
-
-        // コンソールに表示（確認用）
-        console.log('完了したタスク:', completedTasks);
-        
-        // 仮の演出：LINE画面のモブ君のセリフを書き換える
-        const mobMessage = document.querySelector('#screen-line .line-message.mobu p');
-        if (mobMessage) {
-            mobMessage.textContent = 'お疲れ様！報告待ってたよ。';
-        }
-
-        // C-2（LINE画面）へ遷移
-        // ※本来はB-2報告画面へ遷移する（Phase 3-2で修正予定）
-        showScreen('screen-line');
     });
 }
 
-// A-1: ウェルカム画面をタップした時の処理
+// ウェルカム画面タップ
 const welcomeScreen = document.getElementById('screen-welcome');
 if (welcomeScreen) {
     welcomeScreen.addEventListener('click', function() {
-        // 保存されているデータをチェック
         const nickname = localStorage.getItem('nickname');
         const selectedTasks = localStorage.getItem('selectedTasks');
-
-        // ニックネームとタスクが両方保存されていたら（＝2回目以降）
         if (nickname && selectedTasks) {
-            // ホーム画面のタスク表示を更新してから移動
             updateHomeTasks();
             showScreen('screen-home');
         } else {
-            // データがなければ（＝初回）、名前入力画面へ移動
             showScreen('screen-name');
         }
     });
 }
 
-// アプリ起動時の初期処理
+// 初期化
 document.addEventListener('DOMContentLoaded', function() {
-    // 念のためホーム画面のタスク表示を更新しておく
     updateHomeTasks();
 });
