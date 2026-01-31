@@ -7,7 +7,6 @@ function playBlinkVideo(onDarkMoment) {
     const video = document.getElementById('blink-video');
     
     if (!overlay || !video) {
-        // 動画がない、またはHTML設定ミスの場合は即実行
         console.warn("動画が見つかりません。通常遷移します。");
         if (onDarkMoment) onDarkMoment();
         return;
@@ -17,18 +16,15 @@ function playBlinkVideo(onDarkMoment) {
     overlay.classList.add('active');
     video.currentTime = 0;
     
-    // 再生試行（ブラウザによっては自動再生ブロックの可能性あり）
     const playPromise = video.play();
     if (playPromise !== undefined) {
         playPromise.catch(error => {
             console.error("動画再生エラー:", error);
-            // 再生できない場合は即座に遷移
             if (onDarkMoment) onDarkMoment();
         });
     }
 
     // 2. 「真っ暗になるタイミング」で画面遷移を実行
-    // ここでは0.5秒後としていますが、動画に合わせて調整可能です
     setTimeout(() => {
         if (onDarkMoment) onDarkMoment();
     }, 500); 
@@ -116,7 +112,6 @@ if (nicknameInput) {
 // タスク選択画面
 const taskCheckboxes = document.querySelectorAll('#screen-task-select input[type="checkbox"]');
 const taskSelectBtnAlt = document.querySelector('#screen-task-select .btn-primary');
-// IDがあれば取得、なければAltを使用
 const taskSelectButton = document.getElementById('task-select-button') || taskSelectBtnAlt;
 
 taskCheckboxes.forEach(checkbox => {
@@ -160,14 +155,88 @@ homeTaskCheckboxes.forEach(checkbox => {
     });
 });
 
-// ホーム画面：完了ボタンクリック（動画演出実行）
+// ★ Phase 3-2: 報告画面ロジック（分岐処理）
 if (homeCompleteButton) {
     homeCompleteButton.addEventListener('click', function() {
-        // 動画演出を開始し、暗転したタイミングで画面遷移
+        // 1. チェックされたタスクを取得
+        const completedTasks = [];
+        document.querySelectorAll('.task-chip-home input[type="checkbox"]:checked').forEach(checkbox => {
+            const taskName = checkbox.parentElement.querySelector('label').textContent;
+            completedTasks.push(taskName);
+        });
+
+        // 2. 瞬き演出開始
         playBlinkVideo(() => {
+            // 3. 画面遷移と内容の書き換え
+            setupReportScreen(completedTasks);
             showScreen('screen-report');
         });
     });
+}
+
+// 報告画面のセットアップ関数
+function setupReportScreen(completedTasks) {
+    const thoughtText = document.getElementById('report-thought-text');
+    const selectionArea = document.getElementById('report-selection-area');
+    
+    // エリアをリセット
+    selectionArea.innerHTML = '';
+    selectionArea.style.display = 'none';
+
+    // クリックイベントの掃除（重複防止のため再生成）
+    const screenReport = document.getElementById('screen-report');
+    const newScreenReport = screenReport.cloneNode(true);
+    screenReport.parentNode.replaceChild(newScreenReport, screenReport);
+    
+    // 再取得（DOMが書き換わったため）
+    const currentScreen = document.getElementById('screen-report');
+    const currentThoughtText = document.getElementById('report-thought-text');
+    const currentSelectionArea = document.getElementById('report-selection-area');
+
+    if (completedTasks.length === 1) {
+        // パターンA: 1個だけ完了
+        currentThoughtText.textContent = 'よし、完了！モブ君に報告しよっと♪';
+        
+        // 画面全体タップでLINEへ
+        currentScreen.onclick = function() {
+            // 選択したタスクを保存して遷移
+            localStorage.setItem('currentReportTask', completedTasks[0]);
+            showScreen('screen-line');
+        };
+
+    } else {
+        // パターンB: 2個以上完了
+        currentThoughtText.textContent = '今日は色々頑張ったけど、特に頑張った一つをモブ君に報告しよう。';
+        currentSelectionArea.style.display = 'flex'; // 選択肢表示
+        currentSelectionArea.style.flexDirection = 'column';
+        currentSelectionArea.style.gap = '10px';
+        currentSelectionArea.style.marginTop = '15px';
+
+        // 選択肢ボタンを生成
+        completedTasks.forEach(task => {
+            const btn = document.createElement('button');
+            btn.textContent = task;
+            btn.className = 'cloud-btn'; // 後でCSSで装飾
+            btn.style.padding = '10px 20px';
+            btn.style.borderRadius = '20px';
+            btn.style.border = '2px solid #B9DCC6';
+            btn.style.backgroundColor = '#FFFFFF';
+            btn.style.fontFamily = 'M PLUS Rounded 1c';
+            btn.style.color = '#3F4342';
+            btn.style.fontSize = '16px';
+            
+            btn.onclick = function(e) {
+                e.stopPropagation(); // 親のクリックイベントを止める
+                localStorage.setItem('currentReportTask', task);
+                showScreen('screen-line');
+            };
+            
+            currentSelectionArea.appendChild(btn);
+        });
+        
+        // 画面全体タップは無効化（ボタンを押させるため）
+        currentScreen.onclick = null;
+    }
 }
 
 // ウェルカム画面タップ

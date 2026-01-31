@@ -112,7 +112,7 @@ p {
     font-family: 'M PLUS Rounded 1c', sans-serif;
     font-weight: var(--font-regular);
     color: var(--text-dark);
-    font-size: 16px;
+    font-size: 18px;
 }
 
 .error-message {
@@ -352,4 +352,48 @@ p {
     color: var(--text-dark);
     font-size: 16px;
     line-height: 1.6;
+}
+/* =========================================
+   Phase 3-2 修正: 報告画面の全画面化
+   ========================================= */
+
+/* 報告画面専用：余白を消して全画面にする */
+.screen.screen-full {
+    padding: 0 !important; /* 既存の余白を強制解除 */
+    display: none; /* 基本は非表示 */
+    /* active時はJSでflexになるが、paddingは0のまま */
+}
+
+.screen.screen-full.active {
+    display: block; /* 全画面配置のためblockに変更 */
+    width: 100%;
+    height: 100vh;
+    overflow: hidden; /* スクロール防止 */
+    position: relative;
+}
+
+/* 背景画像を全画面に引き伸ばす */
+.bg-full {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* 画面いっぱいにトリミングして表示 */
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+
+/* テキストエリアの位置調整（再定義） */
+.thought-bubble-container {
+    /* HTML構造変更に合わせてCSSも確実に効くように再指定 */
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 30px 20px 60px 20px; /* 下部に少し余裕を */
+    background: rgba(255, 255, 255, 0.9); /* 白の透過度を少し上げる */
+    backdrop-filter: blur(4px);
+    z-index: 2;
+    border-top: 1px solid var(--line-deco-1);
+    text-align: center;
 }
