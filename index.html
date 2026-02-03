@@ -49,7 +49,7 @@
                     <label for="task3">タスク3</label>
                 </div>
             </div>
-            <button class="btn-primary" disabled>これで決定</button>
+            <button class="btn-primary" id="task-select-button" disabled>これで決定</button>
         </div>
     </div>
 
@@ -90,6 +90,18 @@
     <div class="thought-bubble-container">
         <p id="report-thought-text" class="thought-text">よし、完了！モブ君に報告しよっと♪</p>
         <div id="report-selection-area" style="display: none;"></div>
+    </div>
+</div>
+
+   <!-- C-1: カフェ画面（対面）-->
+   <div id="screen-cafe" class="screen screen-full">
+    <!-- カフェ背景 + モブ君 (統合アセット) -->
+    <img src="assets/bg_cafe_mobu_v1.png" alt="カフェ背景とモブ君" class="bg-full" id="cafe-mobu-bg">
+
+    <!-- 下部のセリフ表示エリア -->
+    <div class="dialog-container">
+        <p id="cafe-dialog-text" class="dialog-text"></p>
+        <button id="cafe-dialog-button" class="dialog-button" style="display: none;">TAP</button>
     </div>
 </div>
 

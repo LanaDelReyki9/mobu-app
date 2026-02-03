@@ -397,3 +397,69 @@ p {
     border-top: 1px solid var(--line-deco-1);
     text-align: center;
 }
+/* =========================================
+   Phase 3-3: カフェ画面 (C-1)
+   ========================================= */
+
+   #screen-cafe {
+    background-color: #555; /* 仮の背景色: 後で画像アセットで上書き */
+    position: relative;
+    padding: 0; /* 全画面表示のためpaddingをリセット */
+    display: none; /* 基本は非表示 */
+}
+
+#screen-cafe.active {
+    display: block; /* screen-full の active 時と同じくブロック要素で全画面表示 */
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* カフェ背景 + モブ君 (統合アセット) */
+#cafe-mobu-bg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+
+/* 下部のセリフ表示エリア */
+.dialog-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 30px 20px 60px 20px; /* 下部に余裕を持たせる */
+    background: rgba(255, 255, 255, 0.9); /* 白の半透明帯 */
+    backdrop-filter: blur(4px); /* 背景のぼかし効果 */
+    z-index: 2; /* 背景画像より手前に表示 */
+    border-top: 1px solid var(--line-deco-1); /* 上部に細い線 */
+    text-align: center;
+    display: flex; /* セリフとボタンを縦に並べるため */
+    flex-direction: column;
+    align-items: center;
+}
+
+.dialog-text {
+    font-family: 'M PLUS Rounded 1c', sans-serif;
+    font-weight: var(--font-regular);
+    color: var(--text-dark);
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 15px; /* ボタンとの間にスペース */
+}
+
+.dialog-button {
+    padding: 10px 20px;
+    background-color: var(--color-main);
+    color: var(--text-dark);
+    border: none;
+    border-radius: 12px;
+    font-family: 'M PLUS Rounded 1c', sans-serif;
+    font-weight: var(--font-medium);
+    font-size: 16px;
+    cursor: pointer;
+}
