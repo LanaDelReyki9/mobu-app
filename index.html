@@ -11,9 +11,11 @@
 <body>
     <!-- 動画による瞬き演出オーバーレイ -->
     <div id="video-overlay">
-        <!-- muted playsinline は自動再生に必須 -->
         <video id="blink-video" src="assets/blink_transition.mp4" muted playsinline></video>
     </div>
+    <!-- ★★★ 追加: 暗転演出用オーバーレイ ★★★ -->
+    <div id="fade-overlay"></div>
+
     <!-- A-1: ウェルカム画面 -->
     <div id="screen-welcome" class="screen active">
         <div class="welcome-content">
@@ -100,13 +102,10 @@
             <div class="line-chat">
                 
             </div>
-            <!-- ★★★ 変更点：入力エリアの構造を変更 ★★★ -->
             <div class="line-input-area">
-                <!-- 普段表示される偽の入力バー -->
                 <div id="line-input-bar">
                     <p>(入力エリア)</p>
                 </div>
-                <!-- 気分共有の時に表示されるスタンプ選択エリア -->
                 <div id="mood-stamp-selector" style="display: none;">
                     <button class="mood-stamp">静か</button>
                     <button class="mood-stamp">元気</button>
@@ -117,6 +116,20 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- D-1: エンディング画面 -->
+    <div id="screen-ending" class="screen screen-full">
+        <div class="ending-bg-placeholder"></div>
+        <div class="dialogue-container">
+            <p class="dialogue-text">（エンディングのセリフがここに表示されます）</p>
+        </div>
+    </div>
+
+    <!-- D-2: エピローグ画面 -->
+    <div id="screen-epilogue" class="screen screen-full">
+        <div class="epilogue-bg-placeholder"></div>
+        <!-- D-2はセリフテキスト表示なし -->
     </div>
 
     <!-- D-3: スタッフロール画面 -->

@@ -123,3 +123,24 @@ p {
     height: 100%;
     object-fit: cover;
 }
+
+/* =========================================
+   Phase 5-1 修正: 暗転演出用オーバーレイ
+   ========================================= */
+   #fade-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000000; /* 真っ黒 */
+    z-index: 10000; /* 動画演出(9999)より前面に */
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease; /* 0.5秒かけてじわっと暗くする */
+}
+
+#fade-overlay.active {
+    opacity: 1;
+    pointer-events: auto; /* 暗転中は操作不能にする */
+}

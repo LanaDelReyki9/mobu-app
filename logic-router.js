@@ -1,4 +1,36 @@
 // ===============================================
+// Audio Control (音響演出)
+// ===============================================
+
+/**
+ * SE（効果音）を再生する（仮実装）
+ * @param {string} fileName 再生したい音声ファイル名
+ */
+function playSE(fileName) {
+    console.log(`[Audio] SE再生: ${fileName}`);
+    // 将来ここに音声再生ライブラリのコードを追加
+}
+
+/**
+ * BGM（背景音楽）を再生する（仮実装）
+ * @param {string} fileName 再生したい音声ファイル名
+ * @param {boolean} loop ループ再生するかどうか
+ */
+function playBGM(fileName, loop = false) {
+    console.log(`[Audio] BGM再生: ${fileName} (ループ: ${loop})`);
+    // 将来ここに音声再生ライブラリのコードを追加
+}
+
+/**
+ * 全ての音を停止する（仮実装）
+ */
+function stopAllSounds() {
+    console.log('[Audio] 全ての音を停止');
+    // 将来ここに音声停止ライブラリのコードを追加
+}
+
+
+// ===============================================
 // Router & Screen Control (画面遷移と演出)
 // ===============================================
 
@@ -13,6 +45,9 @@ function appendLineMessage(sender, text, delay = 0) {
     if (!chatArea) return;
 
     setTimeout(() => {
+        if (sender === 'mobu') {
+            playSE('se_line_receive.mp3'); // LINE受信音を再生
+        }
         const messageDiv = document.createElement('div');
         messageDiv.className = `line-message ${sender} new`;
         
@@ -34,6 +69,8 @@ function appendLineMessage(sender, text, delay = 0) {
  * @param {string} screenId 表示したい画面のID
  */
 function showScreen(screenId) {
+    stopAllSounds(); // 画面遷移時に全ての音を停止
+
     document.querySelectorAll('.screen').forEach(screen => {
         screen.classList.remove('active');
     });
@@ -42,6 +79,7 @@ function showScreen(screenId) {
         targetScreen.classList.add('active');
         window.scrollTo(0, 0);
 
+        // --- 画面ごとの初期化処理 ---
         if (screenId === 'screen-line') {
             const chatArea = document.querySelector('#screen-line .line-chat');
             chatArea.innerHTML = '';
@@ -51,16 +89,18 @@ function showScreen(screenId) {
             appendLineMessage('user', `「${reportedTask}」を完了！`, 500);
             appendLineMessage('mobu', `お疲れ様です！「${reportedTask}」を達成したんですね、すごいです！`, 1500);
 
-            // ★★★ 変更点：タスク報告の2秒後に、確率で気分共有イベントを開始 ★★★
             setTimeout(() => {
-                if (Math.random() < 0.5) { // 50%の確率
+                if (Math.random() < 0.5) { 
                     startMoodSharing();
                 } else {
                     console.log("気分共有イベントは発生しませんでした。");
-                    // 通常のイベントチェックに進む
                     checkAndSetupEvent();
                 }
             }, 2000);
+        } else if (screenId === 'screen-cafe') {
+            playBGM('bgm_cafe_ambience.mp3', true);
+        } else if (screenId === 'screen-ending') {
+            handleEndingDialogue();
         }
     }
 }
@@ -79,6 +119,7 @@ function playBlinkVideo(onDarkMoment) {
         return;
     }
 
+    playSE('se_blink_start.mp3'); // 瞬き開始音
     overlay.classList.add('active');
     video.currentTime = 0;
 
@@ -95,8 +136,33 @@ function playBlinkVideo(onDarkMoment) {
     }, 500);
 
     video.onended = () => {
+        playSE('se_blink_end.mp3'); // 瞬き終了音
         overlay.classList.remove('active');
     };
+}
+
+/**
+ * 暗転（フェード）による画面遷移演出
+ * @param {function} onDarkMoment 暗転が完了したタイミングで実行する関数
+ */
+function playFadeTransition(onDarkMoment) {
+    const overlay = document.getElementById('fade-overlay');
+    if (!overlay) {
+        console.warn("暗転オーバーレイが見つかりません。通常遷移します。");
+        if (onDarkMoment) onDarkMoment();
+        return;
+    }
+
+    overlay.classList.add('active');
+
+    setTimeout(() => {
+        if (onDarkMoment) onDarkMoment();
+        
+        setTimeout(() => {
+            overlay.classList.remove('active');
+        }, 100);
+
+    }, 500);
 }
 
 
@@ -162,7 +228,7 @@ function setupReportScreen(completedTasks) {
 
 
 // ===============================================
-// Phase 4-2: 気分共有ロジック (ここから追加)
+// Phase 4-2: 気分共有ロジック
 // ===============================================
 
 /**
@@ -173,7 +239,6 @@ function startMoodSharing() {
     const stampSelector = document.getElementById('mood-stamp-selector');
     const stamps = document.querySelectorAll('.mood-stamp');
 
-    // モブ君からの問いかけ（仮）
     const question = "ところで、今日の気分はどうですか？";
     appendLineMessage('mobu', question, 1000);
 
@@ -183,7 +248,6 @@ function startMoodSharing() {
     }, 1500);
 
     stamps.forEach(stamp => {
-        // イベントリスナーが重複しないように一度クローンして置き換える
         const newStamp = stamp.cloneNode(true);
         stamp.parentNode.replaceChild(newStamp, stamp);
         
@@ -201,6 +265,7 @@ function handleMoodStampClick(mood) {
     const inputBar = document.getElementById('line-input-bar');
     const stampSelector = document.getElementById('mood-stamp-selector');
 
+    playSE('se_stamp_send.mp3');
     appendLineMessage('user', mood, 300);
 
     let reply = "";
@@ -215,7 +280,6 @@ function handleMoodStampClick(mood) {
         stampSelector.style.display = 'none';
         inputBar.style.display = 'block';
 
-        // ★★★ 気分共有の会話が終わった後に、イベントチェックを実行 ★★★
         checkAndSetupEvent();
     }, 1800);
 }
@@ -250,20 +314,28 @@ function checkAndSetupEvent() {
 
             const message = document.createElement('div');
             message.className = 'line-message mobu';
-            message.innerHTML = `<p>ところで、累計タスクが${milestone}個を超えましたね！<br>お店でささやかなお祝いをさせてください😊</p>`;
+
+            if (milestone === 40) {
+                message.innerHTML = `<p>とうとう40個目だね！直接伝えたいことがあるから、カフェで待ってるよ。</p>`;
+            } else {
+                message.innerHTML = `<p>ところで、累計タスクが${milestone}個を超えましたね！<br>お店でささやかなお祝いをさせてください😊</p>`;
+            }
             
             const button = document.createElement('button');
             button.textContent = 'カフェへ向かう';
             button.className = 'btn-event';
 
             button.onclick = function() {
-                showScreen('screen-cafe');
+                if (milestone === 40) {
+                    startEndingSequence();
+                } else {
+                    showScreen('screen-cafe');
+                }
             };
 
             eventUIContainer.appendChild(message);
             eventUIContainer.appendChild(button);
 
-            // ★★★ 呼び出しタイミングが変わったので、setTimeoutの時間を調整 ★★★
             setTimeout(() => {
                 chatArea.appendChild(eventUIContainer);
                 chatArea.scrollTop = chatArea.scrollHeight;
@@ -277,4 +349,72 @@ function checkAndSetupEvent() {
     if (!eventOccurred) {
         console.log(`通常タスク報告。累計: ${currentTotal} (前回: ${previousTotal})`);
     }
+}
+
+// ===============================================
+// Phase 5-1: エンディング演出ロジック
+// ===============================================
+
+/**
+ * 40回達成時のカフェでの会話からエンディング画面への遷移を管理する
+ */
+function startEndingSequence() {
+    showScreen('screen-cafe');
+    playBGM('bgm_cafe_ambience.mp3', true);
+
+    const dialogueText = document.querySelector('#screen-cafe .dialogue-text');
+    const cafeScreen = document.getElementById('screen-cafe');
+
+    dialogueText.textContent = "（ユーザー名）！来てくれてありがとう。嬉しいよ。...早速なんだけど、一緒に行こう。";
+    
+    cafeScreen.onclick = function() {
+        playSE('se_text_advance.mp3');
+        cafeScreen.onclick = null; 
+
+    
+        playFadeTransition(() => {
+            showScreen('screen-ending');
+            playBGM('bgm_confession.mp3', true);
+        });
+    };
+}
+
+
+/**
+ * D-1 エンディング画面の告白セリフ進行を管理する
+ */
+function handleEndingDialogue() {
+    const endingScreen = document.getElementById('screen-ending');
+    const dialogueText = document.querySelector('#screen-ending .dialogue-text');
+    
+    const dialogues = [
+        "ここが俺のお気に入りの場所だよ。いつか大切な人と一緒にここから夕陽を見たいなってずっと思ってたんだ。",
+        "...（ユーザー名）...。好きだ。付き合ってほしい。",
+        "返事はすぐじゃなくていいから、考えてくれる？"
+    ];
+    let currentDialogueIndex = 0;
+
+    dialogueText.textContent = dialogues[currentDialogueIndex];
+    playSE('voice_mobu_d1_confession_1.mp3');
+
+    endingScreen.onclick = function() {
+        currentDialogueIndex++;
+        
+        if (currentDialogueIndex < dialogues.length) {
+            playSE('se_text_advance.mp3');
+            dialogueText.textContent = dialogues[currentDialogueIndex];
+            playSE(`voice_mobu_d1_confession_${currentDialogueIndex + 1}.mp3`);
+        } else {
+            endingScreen.onclick = null;
+            
+            showScreen('screen-epilogue');
+            playBGM('bgm_epilogue_ambience.mp3', true);
+            playSE('voice_mobu_d2_monologue.mp3');
+
+            setTimeout(() => {
+                showScreen('screen-staff-roll');
+                playBGM('bgm_epilogue_staffroll.mp3', true);
+            }, 5000);
+        }
+    };
 }
