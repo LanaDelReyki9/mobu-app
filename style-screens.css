@@ -460,3 +460,36 @@
 #nav-settings-icon:hover {
     opacity: 1;
 }
+
+/* B-3: プロフィール画面のテディベアUIレイアウト */
+.teddy-bear-area {
+    width: 100%;
+    display: grid; /* グリッドレイアウトに変更 */
+    grid-template-columns: repeat(2, 1fr); /* 2列に設定 */
+    gap: 15px; /* 箱の間の隙間 */
+    margin-bottom: 20px;
+    /* 不要になったスタイルを削除 */
+    height: auto;
+    background-color: transparent;
+    justify-content: initial;
+    align-items: initial;
+    color: initial;
+}
+
+.teddy-bear-placeholder {
+    aspect-ratio: 1 / 1; /* 縦横比を1:1（正方形）に保つ */
+    background-color: #e0e0e0;
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--text-light);
+    font-size: 24px;
+    font-weight: var(--font-bold);
+}
+
+/* 達成済みのテディベアのスタイル */
+.teddy-bear-placeholder.achieved {
+    background-color: var(--color-main); /* メインカラー（ミントグリーン）に */
+    color: var(--text-dark); /* 文字色を濃くする */
+}

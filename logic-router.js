@@ -170,6 +170,18 @@ function showProfileScreen() {
     // ここに30回、40回のelse ifが続く
     // ★★★ 追加ここまで ★★★
 
+    // --- テディベアUIの達成状況を更新 ---
+    const teddyBears = document.querySelectorAll('.teddy-bear-placeholder');
+    teddyBears.forEach(bear => {
+        const milestone = parseInt(bear.dataset.milestone, 10);
+        if (totalTasks >= milestone) {
+            bear.classList.add('achieved');
+            console.log(`${milestone}回達成済みのため、テディベアをachieved状態にしました。`);
+        } else {
+            bear.classList.remove('achieved');
+        }
+    });
+
     console.log("プロフィール画面の表示とデータ更新が完了しました。");
 }
 
