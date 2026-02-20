@@ -148,6 +148,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log("プロフィールアイコンがクリックされました。"); // デバッグ用
                 updateLastLoginDate();
                 showProfileScreen();
+                playProfileRewardAnimationIfNeeded();
             });
         }
         

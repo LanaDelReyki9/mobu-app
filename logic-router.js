@@ -115,6 +115,64 @@ function showScreen(screenId) {
 }
 
 /**
+ * 未再生のプロフィール演出があれば再生する (デバッグ版)
+ */
+function playProfileRewardAnimationIfNeeded() {
+    console.log("--- playProfileRewardAnimationIfNeeded が呼び出されました ---");
+
+    const totalTasks = getTotalTasksCompleted();
+    const modal = document.getElementById('reward-modal');
+    const teddyImage = document.getElementById('reward-teddy-image');
+
+    if (!modal || !teddyImage) {
+        console.error("デバッグ: モーダル用のHTML要素が見つかりません。処理を中断します。");
+        return;
+    }
+
+    const hasSeen10 = hasProfileRewardBeenSeen(10);
+    console.log(`デバッグ: 現在の達成回数: ${totalTasks}, 10回再生済みか: ${hasSeen10}`);
+
+    let milestoneToPlay = 0;
+
+    if (totalTasks >= 10 && !hasSeen10) {
+        milestoneToPlay = 10;
+    } else if (totalTasks >= 20 && !hasProfileRewardBeenSeen(20)) {
+        milestoneToPlay = 20;
+    }
+
+    if (milestoneToPlay > 0) {
+        // 1. アニメーションの準備
+        const theme = `t${milestoneToPlay / 10}`;
+        const imageName = `ui_teddy_${theme}_give.png`;
+        const imagePath = `assets/images/${imageName}`;
+
+        teddyImage.src = imagePath;
+
+        // 2. 演出を開始する
+        modal.classList.add('active');
+
+        // 3. 少し待ってからアニメーションを開始するクラスを付与
+        setTimeout(() => {
+            teddyImage.classList.add('animate');
+            console.log("アニメーション開始！");
+        }, 100); // 100ミリ秒後に開始
+
+        // ★重要：演出を見たと記録する
+        markProfileRewardAsSeen(milestoneToPlay);
+
+        // 仮：5秒後に演出を終了する
+        setTimeout(() => {
+            modal.classList.remove('active');
+            teddyImage.classList.remove('animate'); // クラスをリセット
+            console.log("演出終了");
+        }, 5000);
+
+    } else {
+        console.log("デバッグ: 再生する演出はありませんでした。");
+    }
+}
+
+/**
  * プロフィール画面の表示とデータ更新を行う
  */
 function showProfileScreen() {
@@ -156,19 +214,7 @@ function showProfileScreen() {
         progressTextEl.textContent = `次のブーケまで あと ${remaining} 回`;
     }
     
-    // ★★★ 追加ここから ★★★
-    // --- 未再生のご褒美演出がないかチェック ---
-    // ルール：一度に再生するのは1つだけ
-    if (totalTasks >= 10 && !hasProfileRewardBeenSeen(10)) {
-        console.log("【演出再生】10回達成！テディベアの演出を開始します。");
-        // alert("10回達成おめでとう！特別な演出があります！"); // ← テスト用
-        markProfileRewardAsSeen(10);
-    } else if (totalTasks >= 20 && !hasProfileRewardBeenSeen(20)) {
-        // console.log("【演出再生】20回達成！テディベアの演出を開始します。");
-        // markProfileRewardAsSeen(20);
-    }
-    // ここに30回、40回のelse ifが続く
-    // ★★★ 追加ここまで ★★★
+ 
 
     // --- テディベアUIの達成状況を更新 ---
     const teddyBears = document.querySelectorAll('.teddy-bear-placeholder');
