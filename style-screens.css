@@ -478,17 +478,18 @@
 
 .teddy-bear-placeholder {
     aspect-ratio: 1 / 1;
-    background-color: #e0e0e0;
+    background-color: var(--color-main); /* ★変更: 箱の背景をミントグリーンに */
     border-radius: 12px;
-    padding: 8px; /* 画像の周りに少し余白を設ける */
-    box-sizing: border-box; /* paddingを含めてサイズ計算する */
+    /* ★削除: paddingは不要なので削除 */
+    box-sizing: border-box;
+    overflow: hidden; /* ★追加: はみ出した画像を隠す */
 }
 
 /* プレースホルダー内の画像をきれいに収める */
 .teddy-bear-placeholder img {
     width: 100%;
     height: 100%;
-    object-fit: contain; /* アスペクト比を保ったままフィットさせる */
+    object-fit: cover; /* ★変更: 箱いっぱいに画像を拡大表示する */
 }
 
 /* 演出中に箱のクマを一時的に隠すためのスタイル */
@@ -568,4 +569,9 @@
     margin: 0;
     font-size: 16px;
     color: var(--text-dark);
+}
+
+/* ★★★ 待機中（未達成）のクマだけ表示を調整するための追記 ★★★ */
+.teddy-bear-placeholder:not(.achieved) img {
+    object-fit: contain; /* 待機中のクマは、見切れないように「収める」表示にする */
 }
