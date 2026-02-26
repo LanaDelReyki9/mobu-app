@@ -206,7 +206,13 @@ const restartButton = document.getElementById('restart-button');
 if (restartButton) {
     restartButton.addEventListener('click', function() {
         console.log("リスタートボタンがクリックされました！");
-        // ★★★ 修正: データリセット関数を呼び出す ★★★
         resetAllData();
+
+        // ★★★ ここからが追加箇所 ★★★
+        // 瞬き演出を挟んでウェルカム画面へ遷移する
+        playBlinkVideo(() => {
+            showScreen('screen-welcome');
+        });
+        // ★★★ ここまでが追加箇所 ★★★
     });
 }
