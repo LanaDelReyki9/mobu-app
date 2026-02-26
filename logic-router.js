@@ -23,9 +23,8 @@ function playBGM(fileName, loop = false) {
  * 全ての音を停止する（仮実装）
  */
 function stopAllSounds() {
-    console.log('[Audio] 全ての音を停止');
+    console.log(`[Audio] 全ての音を停止`);
 }
-
 
 // ===============================================
 // Router & Screen Control (画面遷移と演出)
@@ -42,7 +41,6 @@ function playProfileRewardAnimationIfNeeded() {
 
     let milestoneToPlay = 0;
 
-    // どの演出を再生するかを決定
     if (totalTasks >= 10 && !hasProfileRewardBeenSeen(10)) {
         milestoneToPlay = 10;
     } else if (totalTasks >= 20 && !hasProfileRewardBeenSeen(20)) {
@@ -54,35 +52,27 @@ function playProfileRewardAnimationIfNeeded() {
     }
 
     if (milestoneToPlay > 0) {
-        // ★★★ 1. 演出対象の箱を見つけて、透明にする ★★★
         const targetBearBox = document.querySelector(`.teddy-bear-placeholder[data-milestone="${milestoneToPlay}"]`);
         if (targetBearBox) {
             targetBearBox.classList.add('hide-for-animation');
         }
 
-        // 2. 演出用の画像を設定
         const theme = `t${milestoneToPlay / 10}`;
         const imageName = `ui_teddy_${theme}_give.png`;
         const imagePath = `assets/images/${imageName}`;
         teddyImage.src = imagePath;
 
-        // 3. 演出を開始
         modal.classList.add('active');
         setTimeout(() => {
             teddyImage.classList.add('animate');
         }, 100);
 
-        // 4. 演出を見たと記録
         markProfileRewardAsSeen(milestoneToPlay);
 
-        // 5. 演出を終了する
         setTimeout(() => {
-            // ★★★ 6. 透明にした箱を元に戻す ★★★
             if (targetBearBox) {
                 targetBearBox.classList.remove('hide-for-animation');
             }
-            
-            // 7. 画面を更新し、モーダルを閉じる
             showProfileScreen();
             modal.classList.remove('active');
             teddyImage.classList.remove('animate');
@@ -152,7 +142,6 @@ function showProfileScreen() {
     console.log("プロフィール画面の表示とデータ更新が完了しました。");
 }
 
-
 /**
  * 指定されたIDの画面を表示する
  * @param {string} screenId 表示したい画面のID
@@ -183,17 +172,31 @@ function showScreen(screenId) {
         } else if (screenId === 'screen-cafe') {
             playBGM('bgm_cafe_ambience.mp3', true);
             const totalTasks = getTotalTasksCompleted();
-            if (totalTasks >= 10 && totalTasks < 20) {
+            const appPhase = localStorage.getItem('appPhase');
+            const isFirstReport = localStorage.getItem('isFirstReport'); // ★追加
+
+            // --- 進行状況に応じて、カフェでのイベントを分岐 ---
+            if (isFirstReport === 'true') {
+                // [最優先] 初回タスク報告の特別イベント
+                handleFirstReportDialogue();
+            } else if (appPhase === 'introduction_motivation') {
+                // [導入フロー2] タスク選択後の動機付けセリフ
+                handleIntroductionDialogue('motivation');
+            } else if (totalTasks >= 10 && totalTasks < 20) {
+                // [通常フロー] 10回達成イベント
                 handleCafeEvent(10);
             } else if (totalTasks >= 20 && totalTasks < 30) {
+                // [通常フロー] 20回達成イベント
                 handleCafeEvent(20);
+            } else {
+                // [導入フロー1] 上記のどれにも当てはまらない場合、最初の導入フェーズと判断
+                handleIntroductionDialogue('start');
             }
         } else if (screenId === 'screen-ending') {
             handleEndingDialogue();
         }
     }
 }
-
 
 /**
  * LINE画面にアニメーション付きでメッセージを追加する
@@ -222,36 +225,62 @@ function appendLineMessage(sender, text, delay = 0) {
     }, delay);
 }
 
-
 /**
  * 瞬き動画を再生し、指定のタイミングでコールバックを実行する
  * @param {function} onDarkMoment 動画が暗転したタイミングで実行する関数
+ * @param {boolean} showPironEffect ピロン♪演出を同時に表示するかどうか
  */
-function playBlinkVideo(onDarkMoment) {
+function playBlinkVideo(onDarkMoment, showPironEffect = false) {
     const overlay = document.getElementById('video-overlay');
     const video = document.getElementById('blink-video');
+    const pironContainer = document.getElementById('piron-effect-container'); // ★追加
+
     if (!overlay || !video) {
         if (onDarkMoment) onDarkMoment();
         return;
     }
+
     playSE('se_blink_start.mp3');
+
+    // ★★★ ピロン♪演出の表示ロジックを追加 ★★★
+    if (showPironEffect && pironContainer) {
+        pironContainer.style.display = 'flex';
+        // アニメーションをリセットするためにクラスを一度削除して再追加
+        const pironText = pironContainer.querySelector('.sound-effect-text');
+        pironText.style.animation = 'none';
+        pironText.offsetHeight; // 再描画をトリガー
+        pironText.style.animation = ''; 
+        
+        playSE('se_task_complete_on.mp3');
+    }
+    // ★★★ ここまで ★★★
+
     overlay.classList.add('active');
     video.currentTime = 0;
     const playPromise = video.play();
+
     if (playPromise !== undefined) {
         playPromise.catch(error => {
+            console.error("動画再生エラー:", error);
             if (onDarkMoment) onDarkMoment();
+            overlay.classList.remove('active');
+            if (pironContainer) pironContainer.style.display = 'none';
         });
     }
+
     setTimeout(() => {
         if (onDarkMoment) onDarkMoment();
-    }, 500);
+    }, 500); // 瞬きで暗くなるタイミングで画面を切り替える
+
     video.onended = () => {
         playSE('se_blink_end.mp3');
         overlay.classList.remove('active');
+        // ★★★ 演出が終わったらピロン♪を非表示に戻す ★★★
+        if (pironContainer) {
+            pironContainer.style.display = 'none';
+        }
     };
 }
-
 
 /**
  * 暗転（フェード）による画面遷移演出
@@ -271,7 +300,6 @@ function playFadeTransition(onDarkMoment) {
         }, 100);
     }, 500);
 }
-
 
 /**
  * 完了したタスクの数に応じて、タスク報告画面の内容を動的に設定する
@@ -324,7 +352,6 @@ function setupReportScreen(completedTasks) {
     }
 }
 
-
 // ===============================================
 // Phase 4-2: 気分共有ロジック
 // ===============================================
@@ -347,9 +374,7 @@ function startMoodSharing() {
         stamp.parentNode.replaceChild(newStamp, stamp);
         newStamp.addEventListener('click', () => {
             handleMoodStampClick(newStamp.textContent);
-        }, {
-            once: true
-        });
+        }, { once: true });
     });
 }
 
@@ -382,10 +407,10 @@ function handleMoodStampClick(mood) {
     }, 1800);
 }
 
-
 // ===============================================
 // イベント分岐ロジック
 // ===============================================
+
 /**
  * イベント発生条件をチェックし、必要ならLINE画面にボタンなどを追加する
  */
@@ -459,7 +484,6 @@ function startEndingSequence() {
     };
 }
 
-
 /**
  * D-1 エンディング画面の告白セリフ進行を管理する
  */
@@ -517,10 +541,10 @@ function handleCafeEvent(milestone) {
     } else if (milestone === 20) {
         const nickname = localStorage.getItem('nickname') || 'あなた';
         dialogues = [
-            `${nickname}、来てくれたんですね、ありがとうございます。その……メガネやめてコンタクトにしてみたんですけど……どうですか？ ずっと変えたいなって思ってたんですよ。`,
+            `${nickname}、来てくれたんですね、ありがとうございます。その……メガネやめてコンタクトにしてみたんですけど……どうですか？ずっと変えたいなって思ってたんですよ。`,
             `それはそうと20回達成、本当にお疲れさまです。${nickname}が頑張ってるのを見てると、俺までなんだか力が湧いてくるんですよ。……その…これ、ささやかですが、感謝の気持ちです。`,
             `${nickname}がいつも頼んでる紅茶の傾向、俺、覚えてますから。これは絶対気に入ってくれると思って。ぜひ試してみてほしいな。`,
-            `……また、頑張った話、聞かせてくださいね。俺も、${nickname}に負けないように、次の一歩を進めるから。`
+            `……また、頑張った話、聞かせてくださいね。俺も、${nickname}に負けないように、次の一歩を進めるから。`,
         ];
         if (!hasProfileRewardBeenSeen(10)) {
             dialogues.push("あ、そうだ。10タスクごとにプロフィール画面でかわいい演出があるらしいって話、覚えてます？俺、この前友達にその画面見せてもらったんだけど、すごくかわいかったですよ");
@@ -536,6 +560,106 @@ function handleCafeEvent(milestone) {
         } else {
             cafeScreen.onclick = null;
             playBlinkVideo(() => showScreen('screen-home'));
+        }
+    };
+}
+
+/**
+ * 初回起動時の導入セリフ進行を管理する
+ * @param {'start' | 'motivation'} type どちらの導入セリフか
+ */
+function handleIntroductionDialogue(type) {
+    const cafeScreen = document.getElementById('screen-cafe');
+    const dialogueText = document.querySelector('#screen-cafe .dialogue-text');
+    const nickname = localStorage.getItem('nickname') || 'あなた';
+
+    let dialogues = [];
+
+    // セリフの種類に応じて、表示するテキストを準備する
+    if (type === 'start') {
+        // 資料4: 初登場セリフ
+        dialogues = [
+            `${nickname}、いらっしゃいませ。今日も来てくれて嬉しいです。いつもの席でよろしいですか？`,
+            `ありがとうございます。あ、そういえば${nickname}。前に『習慣作り』の話をされてましたよね？俺も最近ずっと考えているんです。また後で、何か面白い情報があったら教えてくださいね！`
+        ];
+    } else if (type === 'motivation') {
+        // 資料4: 動機付けセリフ
+        dialogues = [
+            `あ、その音って今話題の『自分磨きアプリ』の音ですか？実は俺も、最近何かを習慣にしたくて気になってたんです。`,
+            `でも、俺にはアプリのデザインがかわいらしすぎて、結局ダウンロードはしなかったんだけど...やっぱり本気で自分磨きは始めたくて。`,
+            `だから…俺も一緒に自分磨き、始めていいですか？誰かと一緒なら頑張れる気がするんです。返信しなくてもいいので、習慣が俺に定着するまでは、${nickname}にメッセージ送ってもいいですか？送らせてもらえたら嬉しいです。`
+        ];
+    }
+
+    let currentDialogueIndex = 0;
+    dialogueText.textContent = dialogues[currentDialogueIndex];
+
+    // 画面がクリックされるたびに次のセリフに進める処理
+    cafeScreen.onclick = function() {
+        currentDialogueIndex++;
+        if (currentDialogueIndex < dialogues.length) {
+            playSE('se_text_advance.mp3');
+            dialogueText.textContent = dialogues[currentDialogueIndex];
+        } else {
+            // すべてのセリフが表示された後の処理
+            cafeScreen.onclick = null; // もうクリックしても反応しないようにする
+            if (type === 'start') {
+                // 初対面セリフ終了後、タスク選択画面へ
+                localStorage.setItem('appPhase', 'introduction_motivation');
+                playBlinkVideo(() => showScreen('screen-task-select'));
+            } else if (type === 'motivation') {
+                // 動機付けセリフ終了後、ホーム画面へ（導入フェーズ完了）
+                localStorage.setItem('appPhase', 'main');
+                playBlinkVideo(() => showScreen('screen-home'));
+            }
+        }
+    };
+}
+
+/**
+ * 初回タスク報告時の、特別な動機付けイベントを管理する
+ */
+function handleFirstReportDialogue() {
+    const cafeScreen = document.getElementById('screen-cafe');
+    const dialogueText = document.querySelector('#screen-cafe .dialogue-text');
+    const nickname = localStorage.getItem('nickname') || 'あなた';
+
+    // 仕様書に基づいたセリフを3つのブロックに分割
+    const dialogues = [
+        `${nickname}、お疲れ様。そのスマホかわいいですね。あ、もしかして今、この前話してたアプリやってます...？俺、自分磨きの習慣スタートして思い始めたんだけど...自分磨きって、達成してもなかなか誰かに褒めてもらえないじゃないですか？それで、結果もなかなか目に見えなかったらモチベ落ちていきません？`,
+        `だから...タスクが終わって達成感を誰かに伝えたい時は、俺を頼ってほしい。いつでも俺に報告してください。一番に応援するから。自分磨きっていう共通の事で、俺も${nickname}の役に立てたらなって！`,
+        `あ、俺用事あるの忘れてた！じゃあ、また！`
+    ];
+
+    let currentDialogueIndex = 0;
+    dialogueText.textContent = dialogues[currentDialogueIndex];
+
+    // 画面がクリックされるたびに次のセリフに進める処理
+    cafeScreen.onclick = function() {
+        currentDialogueIndex++;
+        if (currentDialogueIndex < dialogues.length) {
+            playSE('se_text_advance.mp3');
+            dialogueText.textContent = dialogues[currentDialogueIndex];
+        } else {
+            // すべてのセリフが表示された後の処理
+            cafeScreen.onclick = null; // クリックイベントを無効化
+            localStorage.removeItem('isFirstReport'); // 初回報告フラグを削除
+
+            // 通常の報告フローに戻る
+            // ホーム画面でチェックを入れたタスクを取得
+            const homeCheckboxes = document.querySelectorAll('#screen-home .task-chip-home input[type="checkbox"]');
+            const completedTasks = [];
+            homeCheckboxes.forEach(checkbox => {
+                 // この時点ではチェックは外れているが、完了ボタンを押した時のタスクを取得したい
+                 // しかし、この方法では取得できないので、修正が必要。
+                 // 一旦、仮でlocalStorageから読み込むようにする
+            });
+            
+             // localStorageに保存した完了タスクを読み込む
+            const tasksFromStorage = JSON.parse(localStorage.getItem('tempCompletedTasks') || '[]');
+
+            // 報告画面へ遷移
+            setupReportScreen(tasksFromStorage);
         }
     };
 }
