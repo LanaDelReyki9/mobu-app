@@ -174,8 +174,9 @@ if (profileIcon) {
 
 if (settingsIcon) {
     settingsIcon.addEventListener('click', function() {
-        console.log("設定アイコンがクリックされました。（機能は未実装）");
-        // ここに将来、設定画面への遷移処理が入ります
+        updateLastLoginDate();
+        // ★★★ 修正: 専用の関数で設定画面を表示する ★★★
+        showSettingsScreen();
     });
 }
 
@@ -199,6 +200,13 @@ showScreen('screen-home');
 });
 }
 
+const settingsBackButton = document.getElementById('settings-back-button');
+if (settingsBackButton) {
+    settingsBackButton.addEventListener('click', function() {
+        showScreen('screen-home');
+    });
+}
+
 });
 
 // D-3: スタッフロール画面
@@ -214,5 +222,46 @@ if (restartButton) {
             showScreen('screen-welcome');
         });
         // ★★★ ここまでが追加箇所 ★★★
+    });
+}
+
+// A-4: 設定画面
+const settingsBackButton = document.getElementById('settings-back-button');
+if (settingsBackButton) {
+    settingsBackButton.addEventListener('click', function() {
+        updateLastLoginDate();
+        showScreen('screen-home');
+    });
+}
+
+// A-4: 設定画面の機能
+const saveNicknameButton = document.getElementById('save-nickname-button');
+const resetTasksButton = document.getElementById('reset-tasks-button');
+const settingNicknameInput = document.getElementById('setting-nickname-input');
+
+// 1. 「保存」ボタンの処理
+if (saveNicknameButton && settingNicknameInput) {
+    saveNicknameButton.addEventListener('click', function() {
+        const newNickname = settingNicknameInput.value.trim();
+        // 入力が空でなく、10文字以内かチェック
+        if (newNickname && newNickname.length <= 10) {
+            localStorage.setItem('nickname', newNickname);
+            alert('ニックネームを保存しました！'); // 保存完了をユーザーに知らせる
+        } else {
+            alert('ニックネームは1文字以上10文字以内で入力してください。');
+        }
+    });
+}
+
+// 2. 「タスクを変更する」ボタンの処理
+if (resetTasksButton) {
+    resetTasksButton.addEventListener('click', function() {
+        // 確認ダイアログを表示
+        const isConfirmed = confirm('本当にタスクを選び直しますか？\nこれまでのタスク達成回数はリセットされませんが、よろしいですか？');
+        
+        if (isConfirmed) {
+            // タスク選択画面へ遷移する
+            showScreen('screen-task-select');
+        }
     });
 }

@@ -147,16 +147,20 @@ function showProfileScreen() {
  * @param {string} screenId 表示したい画面のID
  */
 function showScreen(screenId) {
+    // ★★★ 修正: 音の停止と画面非表示をここで行う ★★★
     stopAllSounds();
     document.querySelectorAll('.screen').forEach(screen => {
         screen.classList.remove('active');
     });
+
     const targetScreen = document.getElementById(screenId);
     if (targetScreen) {
         targetScreen.classList.add('active');
         window.scrollTo(0, 0);
 
+        // --- 各画面表示時のユニークな処理 ---
         if (screenId === 'screen-line') {
+            // (LINE画面の処理は変更なし)
             const chatArea = document.querySelector('#screen-line .line-chat');
             chatArea.innerHTML = '';
             const reportedTask = localStorage.getItem('currentReportTask');
@@ -170,31 +174,30 @@ function showScreen(screenId) {
                 }
             }, 2000);
         } else if (screenId === 'screen-cafe') {
+            // (カフェ画面の処理は変更なし)
             playBGM('bgm_cafe_ambience.mp3', true);
             const totalTasks = getTotalTasksCompleted();
             const appPhase = localStorage.getItem('appPhase');
-            const isFirstReport = localStorage.getItem('isFirstReport'); // ★追加
+            const isFirstReport = localStorage.getItem('isFirstReport');
 
-            // --- 進行状況に応じて、カフェでのイベントを分岐 ---
             if (isFirstReport === 'true') {
-                // [最優先] 初回タスク報告の特別イベント
                 handleFirstReportDialogue();
             } else if (appPhase === 'introduction_motivation') {
-                // [導入フロー2] タスク選択後の動機付けセリフ
                 handleIntroductionDialogue('motivation');
             } else if (totalTasks >= 10 && totalTasks < 20) {
-                // [通常フロー] 10回達成イベント
                 handleCafeEvent(10);
             } else if (totalTasks >= 20 && totalTasks < 30) {
-                // [通常フロー] 20回達成イベント
                 handleCafeEvent(20);
             } else {
-                // [導入フロー1] 上記のどれにも当てはまらない場合、最初の導入フェーズと判断
                 handleIntroductionDialogue('start');
             }
         } else if (screenId === 'screen-ending') {
+            // (エンディング画面の処理は変更なし)
             handleEndingDialogue();
         }
+        // ★★★ if文の外に出すことで、どの画面でも表示されるようにする ★★★
+    } else {
+        console.error(`エラー: IDが '${screenId}' の画面が見つかりません。`);
     }
 }
 
@@ -662,4 +665,19 @@ function handleFirstReportDialogue() {
             setupReportScreen(tasksFromStorage);
         }
     };
+}
+
+/**
+ * 設定画面の表示とデータ更新を行う
+ */
+function showSettingsScreen() {
+    // まず画面を切り替える
+    showScreen('screen-settings');
+
+    // 現在保存されているニックネームを取得して入力欄に表示する
+    const nicknameInput = document.getElementById('setting-nickname-input');
+    const currentNickname = localStorage.getItem('nickname') || '';
+    if (nicknameInput) {
+        nicknameInput.value = currentNickname;
+    }
 }
