@@ -97,10 +97,18 @@ if (taskCheckboxes.length > 0 && taskSelectButton) {
         localStorage.setItem('selectedTasks', JSON.stringify(selectedTasks));
         updateHomeTasks();
 
-        // ★★★ 修正: ピロン♪演出付きで瞬き動画を再生する ★★★
-        playBlinkVideo(() => {
-            showScreen('screen-cafe');
-        }, true); // 第2引数に true を渡してピロン♪演出を有効化
+        // ★★★ 修正②: 初回起動時と設定からの変更時で処理を分岐 ★★★
+        const appPhase = localStorage.getItem('appPhase');
+        if (appPhase !== 'main') {
+            // 初回起動時のフロー
+            playBlinkVideo(() => {
+                showScreen('screen-cafe');
+            }, true); 
+        } else {
+            // 設定画面からタスクを変更した場合のフロー
+            alert('タスクを変更しました。');
+            showScreen('screen-home');
+        }
     });
 }
 
@@ -239,16 +247,28 @@ const saveNicknameButton = document.getElementById('save-nickname-button');
 const resetTasksButton = document.getElementById('reset-tasks-button');
 const settingNicknameInput = document.getElementById('setting-nickname-input');
 
-// 1. 「保存」ボタンの処理
+// 1. 「保存」ボタンの処理 (変更なし)
 if (saveNicknameButton && settingNicknameInput) {
     saveNicknameButton.addEventListener('click', function() {
         const newNickname = settingNicknameInput.value.trim();
-        // 入力が空でなく、10文字以内かチェック
         if (newNickname && newNickname.length <= 10) {
             localStorage.setItem('nickname', newNickname);
-            alert('ニックネームを保存しました！'); // 保存完了をユーザーに知らせる
+            alert('ニックネームを保存しました！');
         } else {
             alert('ニックネームは1文字以上10文字以内で入力してください。');
+        }
+    });
+}
+
+// 2. 「タスクを変更する」ボタンの処理 (★修正箇所)
+if (resetTasksButton) {
+    resetTasksButton.addEventListener('click', function() {
+        // ★修正①: 確認メッセージをより親切な表現に
+        const isConfirmed = confirm('本当にタスクを選び直しますか？\nこれまでのタスク達成回数はリセットされませんので、ご安心ください。');
+        
+        if (isConfirmed) {
+            // タスク選択画面へ遷移する
+            showScreen('screen-task-select');
         }
     });
 }
