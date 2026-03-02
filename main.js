@@ -19,17 +19,27 @@ document.addEventListener('DOMContentLoaded', function() {
 // A-1: ウェルカム画面
 const welcomeScreen = document.getElementById('screen-welcome');
 if (welcomeScreen) {
-welcomeScreen.addEventListener('click', function() {
-updateLastLoginDate();
-const nickname = localStorage.getItem('nickname');
-const selectedTasks = localStorage.getItem('selectedTasks');
-if (nickname && selectedTasks) {
-updateHomeTasks();
-showScreen('screen-home');
-} else {
-showScreen('screen-name');
-}
-});
+    welcomeScreen.addEventListener('click', function() {
+        updateLastLoginDate();
+        const appPhase = localStorage.getItem('appPhase');
+        const nickname = localStorage.getItem('nickname');
+
+        if (appPhase === 'main_loop') {
+            // [A] メインループ
+            updateHomeTasks();
+            showScreen('screen-home');
+        } else if (nickname) {
+            // [B] 導入フロー途中でリロードした場合
+            if (appPhase === 'introduction_task_select') {
+                showScreen('screen-task-select');
+            } else {
+                showScreen('screen-cafe');
+            }
+        } else {
+            // [C] 全くの初回起動
+            showScreen('screen-name');
+        }
+    });
 }
 
 // A-2: 名前入力画面
@@ -101,18 +111,26 @@ if (taskCheckboxes.length > 0 && taskSelectButton) {
         localStorage.setItem('selectedTasks', JSON.stringify(selectedTasks));
         updateHomeTasks();
 
-        // ★★★ 修正②: 初回起動時と設定からの変更時で処理を分岐 ★★★
         const appPhase = localStorage.getItem('appPhase');
-        if (appPhase !== 'main') {
+        
+        // ★★★ ここからが診断用コード ★★★
+        console.log("--- タスク決定ボタンクリック時の診断 ---");
+        console.log("クリック前のappPhase:", appPhase);
+        // ★★★ ここまで ★★★
+
+        if (appPhase === 'main_loop') {
+            // 設定画面からタスクを変更した場合のフロー
+            console.log("判定: メインループ中 → ホーム画面へ");
+            alert('タスクを変更しました。');
+            showScreen('screen-home');
+        } else {
             // 初回起動時のフロー
+            console.log("判定: 導入フロー中 → カフェ画面へ");
             playBlinkVideo(() => {
                 showScreen('screen-cafe');
             }, true); 
-        } else {
-            // 設定画面からタスクを変更した場合のフロー
-            alert('タスクを変更しました。');
-            showScreen('screen-home');
         }
+        console.log("------------------------------------");
     });
 }
 
@@ -286,6 +304,31 @@ if (resetTasksButton) {
         if (isConfirmed) {
             // タスク選択画面へ遷移する
             showScreen('screen-task-select');
+        }
+    });
+}
+
+// ===============================================
+// A-3: タスク選択画面 (新レイアウト用の処理)
+// ===============================================
+
+// ジャンルグループ内の各チップに背景色を data-color 属性から設定する
+const taskGroups = document.querySelectorAll('.task-group');
+if (taskGroups.length > 0) {
+    taskGroups.forEach(group => {
+        const color = group.dataset.color;
+        if (color) {
+            // グループ内の「ジャンルチップ」に色を設定
+            const categoryChip = group.querySelector('.category-chip');
+            if (categoryChip) {
+                categoryChip.style.backgroundColor = color;
+            }
+
+            // グループ内の「すべてのタスクチップ」に色を設定
+            const taskChips = group.querySelectorAll('.task-chip');
+            taskChips.forEach(chip => {
+                chip.style.backgroundColor = color;
+            });
         }
     });
 }

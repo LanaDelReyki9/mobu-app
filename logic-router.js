@@ -282,23 +282,32 @@ function showScreen(screenId) {
             
 
         } else if (screenId === 'screen-cafe') {
-            // (カフェ画面の処理は変更なし)
             playBGM('bgm_cafe_ambience.mp3', true);
             const totalTasks = getTotalTasksCompleted();
             const appPhase = localStorage.getItem('appPhase');
             const isFirstReport = localStorage.getItem('isFirstReport');
 
+            // --- 進行状況に応じて、カフェでのイベントを分岐 ---
             if (isFirstReport === 'true') {
+                // [最優先] 初回タスク報告の特別イベント
                 handleFirstReportDialogue();
+            } else if (appPhase === 'introduction_task_select') {
+                // ★★★ 抜け落ちていた分岐を追加 ★★★
+                // [導入フロー2] タスク選択後の動機付けセリフ
+                handleIntroductionDialogue('motivation');
             } else if (appPhase === 'introduction_motivation') {
                 handleIntroductionDialogue('motivation');
             } else if (totalTasks >= 10 && totalTasks < 20) {
+                // [通常フロー] 10回達成イベント
                 handleCafeEvent(10);
             } else if (totalTasks >= 20 && totalTasks < 30) {
+                // [通常フロー] 20回達成イベント
                 handleCafeEvent(20);
             } else {
+                // [導入フロー1] 上記のどれにも当てはまらない場合、最初の導入フェーズと判断
                 handleIntroductionDialogue('start');
             }
+
         } else if (screenId === 'screen-ending') {
             // (エンディング画面の処理は変更なし)
             handleEndingDialogue();
@@ -691,7 +700,7 @@ function handleIntroductionDialogue(type) {
         // 資料4: 初登場セリフ
         dialogues = [
             `${nickname}、いらっしゃいませ。今日も来てくれて嬉しいです。いつもの席でよろしいですか？`,
-            `ありがとうございます。あ、そういえば${nickname}。前に『習慣作り』の話をされてましたよね？俺も最近ずっと考えているんです。また後で、何か面白い情報があったら教えてくださいね！`
+            `あ、そういえば${nickname}。前に『習慣作り』の話をされてましたよね？俺も最近ずっと考えているんです。また後で、何か面白い情報があったら教えてくださいね！`
         ];
     } else if (type === 'motivation') {
         // 資料4: 動機付けセリフ
@@ -700,6 +709,7 @@ function handleIntroductionDialogue(type) {
             `でも、俺にはアプリのデザインがかわいらしすぎて、結局ダウンロードはしなかったんだけど...やっぱり本気で自分磨きは始めたくて。`,
             `だから…俺も一緒に自分磨き、始めていいですか？誰かと一緒なら頑張れる気がするんです。返信しなくてもいいので、習慣が俺に定着するまでは、${nickname}にメッセージ送ってもいいですか？送らせてもらえたら嬉しいです。`
         ];
+        localStorage.setItem('appPhase', 'introduction_motivation');
     }
 
     let currentDialogueIndex = 0;
@@ -716,11 +726,11 @@ function handleIntroductionDialogue(type) {
             cafeScreen.onclick = null; // もうクリックしても反応しないようにする
             if (type === 'start') {
                 // 初対面セリフ終了後、タスク選択画面へ
-                localStorage.setItem('appPhase', 'introduction_motivation');
+                localStorage.setItem('appPhase', 'introduction_task_select'); // ★修正: より具体的に
                 playBlinkVideo(() => showScreen('screen-task-select'));
             } else if (type === 'motivation') {
                 // 動機付けセリフ終了後、ホーム画面へ（導入フェーズ完了）
-                localStorage.setItem('appPhase', 'main');
+                localStorage.setItem('appPhase', 'main_loop'); // ★修正: main から変更
                 playBlinkVideo(() => showScreen('screen-home'));
             }
         }

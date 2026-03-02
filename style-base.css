@@ -66,10 +66,10 @@ padding: 20px;
 }
 
 .screen.active {
-display: flex;
-flex-direction: column;
-justify-content: center;
-align-items: center;
+    display: flex;
+    flex-direction: column;
+    /* justify-content: center; */ /* ★★★ この行をコメントアウト（または削除）★★★ */
+    align-items: center;
 }
 
 /* 共通ボタン */
@@ -138,4 +138,21 @@ transition: opacity 0.5s ease;
 #fade-overlay.active {
 opacity: 1;
 pointer-events: auto; /* 暗転中は操作不能にする */
+}
+
+/* --- 診断用CSS --- */
+#screen-task-select {
+    outline: 5px solid red !important;
+    z-index: 9000 !important;
+    background-color: rgba(255, 0, 0, 0.1) !important;
+}
+#screen-cafe {
+    outline: 5px solid blue !important;
+    z-index: 8000 !important;
+    background-color: rgba(0, 0, 255, 0.1) !important;
+}
+
+/* --- 診断用CSS：タスク選択画面の背景色強制指定 --- */
+#screen-task-select {
+    background-color: #F4F9F6 !important;
 }
