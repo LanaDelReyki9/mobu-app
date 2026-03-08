@@ -10,6 +10,22 @@
     <link rel="stylesheet" href="style-screens.css">
 </head>
 <body>
+    <!-- ★★★ Phase3-X: フェイク通知UI ★★★ -->
+    <div id="fake-notification-banner" class="fake-notification">
+        <div class="notification-content">
+            <div class="icon-container">
+                <img src="assets/images/mobu_icon_v1.png" alt="icon" id="notification-icon" class="profile-icon">
+                <div class="app-badge">IINE</div>
+            </div>
+            <div class="text-container">
+                <p class="sender-name" id="notification-sender">モブ君</p>
+                <p class="message-text" id="notification-message">「今度の土曜、空いてる？」</p>
+            </div>
+            <div class="time-stamp">
+                <p>今</p>
+            </div>
+        </div>
+    </div>
     <!-- 動画による瞬き演出オーバーレイ -->
     <div id="video-overlay">
         <video id="blink-video" src="assets/blink_transition.mp4" muted playsinline></video>
@@ -236,9 +252,11 @@
             
         </div>
         <div class="line-input-area">
+            <!-- 通常のタスク報告時の入力バー -->
             <div id="line-input-bar">
                 <p>(入力エリア)</p>
             </div>
+            <!-- 気分共有時のスタンプ選択UI -->
             <div id="mood-stamp-selector" style="display: none;">
                 <button class="mood-stamp">静か</button>
                 <button class="mood-stamp">元気</button>
@@ -247,6 +265,11 @@
                 <button class="mood-stamp">不安</button>
                 <button class="mood-stamp">嬉しい</button>
             </div>
+            <!-- ★★★ 通知への返信スタンプUI（ここから追加） ★★★ -->
+            <div id="notification-reply-area" style="display: none;">
+                <img id="reply-stamp-image" src="" alt="返信スタンプ" class="reply-stamp">
+            </div>
+            <!-- ★★★ ここまで ★★★ -->
         </div>
     </div>
 </div>

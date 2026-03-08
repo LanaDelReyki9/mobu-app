@@ -647,3 +647,125 @@ object-fit: contain; / 待機中のクマは、見切れないように「収め
         opacity: 0;
     }
 }
+
+/* =========================================
+   Phase3-X: フェイク通知UI スタイリング
+   ========================================= */
+
+/* 通知バナー全体のコンテナ */
+.fake-notification {
+    position: fixed; /* 画面に固定 */
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%) translateY(-150%); /* 初期状態では画面の外（上）に隠す */
+    width: 95%;
+    max-width: 500px; /* PCでの表示を考慮 */
+    z-index: 10001; /* 瞬き動画(9999)よりも手前に表示 */
+    padding: 12px;
+    background-color: rgba(240, 240, 240, 0.9); /* 少し透明な白 */
+    backdrop-filter: blur(10px); /* すりガラス効果 */
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1); /* なめらかなアニメーション */
+    cursor: pointer;
+}
+
+/* 通知バナーが表示される時のスタイル */
+.fake-notification.show {
+    transform: translateX(-50%) translateY(20px); /* 画面上部にスライドイン */
+}
+
+/* 通知バナーの中身のレイアウト */
+.notification-content {
+    display: flex;
+    align-items: flex-start; /* アイコンとテキストを上揃えに */
+    gap: 12px;
+}
+
+/* 左側のアイコンエリア */
+.icon-container {
+    position: relative;
+    flex-shrink: 0; /* 縮まないようにする */
+}
+
+.profile-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%; /* 円形にする */
+    object-fit: cover;
+    background-color: #ccc; /* 画像がない場合の背景色 */
+}
+
+/* "IINE"の緑のバッジ */
+.app-badge {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    background-color: #06C755; /* 緑色 */
+    color: white;
+    font-size: 8px;
+    font-weight: bold;
+    padding: 2px 5px;
+    border-radius: 6px;
+    border: 1px solid white;
+}
+
+/* 中央のテキストエリア */
+.text-container {
+    flex-grow: 1; /* 残りの幅をすべて使う */
+    text-align: left;
+}
+
+.sender-name, .message-text, .time-stamp p {
+    margin: 0;
+    padding: 0;
+    text-align: left;
+    color: #333; /* 文字色を少し濃く */
+}
+
+.sender-name {
+    font-weight: var(--font-bold); /* 太字 */
+    font-size: 15px;
+    margin-bottom: 2px;
+}
+
+.message-text {
+    font-weight: var(--font-regular);
+    font-size: 14px;
+    line-height: 1.3;
+}
+
+/* 右側のタイムスタンプ */
+.time-stamp {
+    font-size: 12px;
+    color: #888;
+    flex-shrink: 0;
+}
+
+/* =========================================
+   Phase3-X: 通知返信スタンプUI
+   ========================================= */
+
+/* 返信スタンプのコンテナエリア */
+#notification-reply-area {
+    padding: 10px 16px;
+    background-color: var(--color-white); /* 他の入力エリアと背景色を合わせる */
+    border-top: 1px solid var(--text-light);
+    display: flex; /* 中の画像を中央寄せにする */
+    justify-content: center;
+    align-items: center;
+}
+
+/* 返信スタンプ画像そのもの */
+.reply-stamp {
+    width: 80px; /* スタンプの横幅 */
+    height: 80px; /* スタンプの縦幅 */
+    cursor: pointer;
+    transition: transform 0.1s ease-in-out;
+}
+
+/* クリックした時に少し小さくなる演出 */
+.reply-stamp:active {
+    transform: scale(0.9);
+}

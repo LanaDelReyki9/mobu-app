@@ -2,6 +2,46 @@
 // Dialogue Data (セリフデータ)
 // ===============================================
 
+// 資料7より: サボり日数に応じた通知メッセージ
+const oneeNotificationDialogues = {
+    // オネェLv1（1-3日放置）の時にランダムで表示されるセリフ
+    onee_lv1: [
+        "ちょっと自分磨きはお休み？いいのよ、無理しなくて。でも…また“自分を大事にする時間”取り戻しましょ？",
+        "今日のあなた、寝ぐせついてるわよ。ふふ、早く身だしなみ整えてね。",
+        "頑張ってるあなた、素敵だったから、正直ちょっとサミシイわ。"
+    ],
+    // オネェLv2（4-9日放置）の時にランダムで表示されるセリフ
+    onee_lv2: [
+        "ねぇ、最近ちょっと元気ないんじゃない？そんな時こそ、自分を丁寧に扱うのよ。",
+        "ねぇ、あなた。最近ちょっと下向きすぎじゃない？",
+        "ホラ、鏡見て？…ほら、まだまだイケるじゃないの。アタシの“推し”がそんな顔で下向いてたらイヤよ〜？"
+    ],
+    // オネェLv3（10日以上放置）の時にランダムで表示されるセリフ
+    onee_lv3: [
+        "ちょっとちょっとォ〜！サボりぐせ戻ってきてない⁉アタシ、もう心配で美容パック3枚重ねよ！",
+        "はぁ…アタシ、頑張るあなたが好きだったのに…。でも、今はアタシが輝く番ね✨置いてっちゃうんだから！",
+        "ねぇ聞いて。あなたがサボるたびにアタシ、美しくなっていくの。そろそろ追いかけてきて？"
+    ]
+};
+
+// 資料13より: タスクに応じた定時通知メッセージ
+// キーは index.html のタスク選択チェックボックスのIDに対応
+const periodicNotificationDialogues = {
+    "task-select-1": "白湯、ちゃんと飲んでます？身体のためにも水分補給していきましょうね。", // 朝食前に白湯を飲む
+    "task-select-3": "朝のフルーツ、何入れるんですか？朝ごはんにフルーツがあるだけでちょっと嬉しいですよね。", // 朝ごはんにフルーツを足す
+    "task-select-10": "よく眠れました？あなたの肌も労わってあげてくださいね。", // スキンケアを丁寧にする
+    "task-select-2": "間食、我慢できてます？俺は我慢してるけど、昨日夢の中でケーキ食べちゃった…。", // 間食を1回だけ我慢
+    "task-select-7": "やっとお昼ですね。肩凝ってません？軽くストレッチして少し休憩しますか？", // 1分ストレッチ
+    "task-select-5": "部屋の片づけ、目の前のもの5つ片づけるだけでも、スッキリするんですよね。", // 1日1カ所だけ片づけ
+    "task-select-4": "もう夜ですね。スマホ、楽しいですけど、そろそろ目を休めましょうか。", // 寝る前スマホを15分おやすみ
+    "task-select-6": "今日の気持ち、ひとことでもいいから聞かせてほしいです。", // 今日の“ありがとう”をひとつ思い出す
+    "task-select-12": "疲れてても深呼吸だけしてみますか？ふぅ～。ちょっと力抜けますね！", // 深呼吸を3回する
+    // 以下は資料13に未記載だが、選択可能なタスクのためダミーを追加
+    "task-select-8": "今日も階段、選びましたか？その小さな選択が、未来のあなたを作りますよ。", // 階段を選ぶ
+    "task-select-9": "背すじ、気づいたら丸まってません？ちょっと伸ばして、ついでに深呼吸しましょうか。", // 背筋を伸ばす時間を意識
+    "task-select-11": "手って、一番働き者なのにケアを後回しにしちゃいますよね。ハンドクリーム、塗ってあげてくださいね。" // リップやハンドケアを忘れずに
+};
+
 // 資料7を基にした、サボりからの復帰時のセリフ集
 const recoveryDialogues = {
     // Ver.1 (タスク達成回数 0-9回)
@@ -229,59 +269,112 @@ function showScreen(screenId) {
 
         // --- 各画面表示時のユニークな処理 ---
         if (screenId === 'screen-line') {
+            // --- UI要素を取得 ---
             const chatArea = document.querySelector('#screen-line .line-chat');
-            chatArea.innerHTML = ''; 
+            const inputBar = document.getElementById('line-input-bar');
+            const moodSelector = document.getElementById('mood-stamp-selector');
+            const replyArea = document.getElementById('notification-reply-area');
+            const replyStamp = document.getElementById('reply-stamp-image');
+            chatArea.innerHTML = ''; // まずはチャット欄を空にする
 
-            const mobuState = getMobuState(); 
-            const reportedTask = localStorage.getItem('currentReportTask');
-            let initialDelay = 500;
-            
-            // ★★★ ここからが新しいロジック ★★★
-            // ユーザーが報告するタスクのセリフを準備
-            const userTaskReportText = userReplyDialogues.taskReports[reportedTask] || `${reportedTask}を完了！`;
+            // --- 通知からの遷移か、タスク報告からの遷移かを判定 ---
+            const tappedNotificationData = localStorage.getItem('tappedNotification');
 
-            // --- サボりからの復帰かどうかで分岐 ---
-            if (mobuState !== 'normal') {
-                // [A] サボりからの復帰フロー
-                const mobuVersion = getMobuVersion();
-                const dialogueData = recoveryDialogues[mobuVersion];
+            if (tappedNotificationData) {
+                // [A] 通知をタップして遷移してきた場合
+                const notification = JSON.parse(tappedNotificationData);
+
+                // 1. UIの表示を切り替える
+                inputBar.style.display = 'none';
+                moodSelector.style.display = 'none';
+                replyArea.style.display = 'flex';
+
+                // 2. モブ君の状態に応じて返信スタンプ画像を設定
+                if (notification.type === 'onee') {
+                    replyStamp.src = 'assets/images/stamp_onee.png'; // 汗をかいてるマスコット (仮パス)
+                } else { // 'periodic'
+                    replyStamp.src = 'assets/images/stamp_normal.png'; // 親指を立ててるマスコット (仮パス)
+                }
                 
-                if (dialogueData && dialogueData[mobuState]) {
-                    const dialogue = dialogueData[mobuState];
-                    // 1. モブ君からのオネェメッセージ
-                    appendLineMessage('mobu', dialogue, initialDelay);
-                    initialDelay += 1500;
-                    
-                    // 2. ユーザーからの汎用リアクション (ランダム)
-                    const reactions = userReplyDialogues.recoveryReactions;
-                    const randomReaction = reactions[Math.floor(Math.random() * reactions.length)];
-                    appendLineMessage('user', randomReaction, initialDelay);
-                    initialDelay += 1500;
-                }
-                setMobuState('normal');
+                // 3. チャット欄に通知の全文を表示
+                appendLineMessage('mobu', notification.message, 100);
 
-            } 
+               // 4. 処理が終わったら、保存しておいたデータを消去（重要）
+               localStorage.removeItem('tappedNotification');
 
-            // --- 共通のタスク報告フロー ---
-            // 3. ユーザーからのタスク報告 (復帰フローの場合はリアクションの後)
-            appendLineMessage('user', userTaskReportText, initialDelay);
-            initialDelay += 1000;
+               // 5. スタンプがクリックされた時の処理を登録
+               let stampClicked = false;
+               replyStamp.onclick = function() {
+                   if (stampClicked) return;
+                   stampClicked = true;
+                   appendUserStampMessage(replyStamp.src);
+                   setTimeout(() => {
+                       playBlinkVideo(() => {
+                           showScreen('screen-home');
+                       });
+                   }, 500);
+               };
 
-            // 4. モブ君からの返信
-            appendLineMessage('mobu', `お疲れ様です！「${reportedTask}」を達成したんですね、すごいです！`, initialDelay);
-            initialDelay += 1000;
+           } else {
             
-            // --- 気分共有またはイベントチェックのフローへ ---
-            setTimeout(() => {
-                if (Math.random() < 0.5) {
-                    startMoodSharing();
-                } else {
-                    checkAndSetupEvent();
+// 5. スタンプがクリックされた時の処理を登録
+const newReplyStamp = replyStamp.cloneNode(true);
+replyStamp.parentNode.replaceChild(newReplyStamp, replyStamp);
+
+newReplyStamp.addEventListener('click', function() {
+    // 自身の画像パスを取得して、送信演出を行う
+    appendUserStampMessage(newReplyStamp.src);
+
+    // 0.5秒後に瞬き演出を開始
+    setTimeout(() => {
+        playBlinkVideo(() => {
+            showScreen('screen-home');
+        });
+    }, 500); // 0.5秒のディレイ
+}, { once: true });
+
+                // [B] 通常のタスク報告で遷移してきた場合（これまでの処理）
+                inputBar.style.display = 'block';
+                moodSelector.style.display = 'none';
+                replyArea.style.display = 'none';
+
+                // (ここに元のタスク報告のフローが入る)
+                const mobuState = getMobuState();
+                const reportedTask = localStorage.getItem('currentReportTask');
+                let initialDelay = 500;
+                const userTaskReportText = userReplyDialogues.taskReports[reportedTask] || `${reportedTask}を完了！`;
+                
+                if (mobuState !== 'normal') {
+                    const mobuVersion = getMobuVersion();
+                    const dialogueData = recoveryDialogues[mobuVersion];
+                    if (dialogueData && dialogueData[mobuState]) {
+                        const dialogue = dialogueData[mobuState];
+                        appendLineMessage('mobu', dialogue, initialDelay);
+                        initialDelay += 1500;
+                        const reactions = userReplyDialogues.recoveryReactions;
+                        const randomReaction = reactions[Math.floor(Math.random() * reactions.length)];
+                        appendLineMessage('user', randomReaction, initialDelay);
+                        initialDelay += 1500;
+                    }
+                    setMobuState('normal');
                 }
-            }, initialDelay + 1000);
-            
+                
+                appendLineMessage('user', userTaskReportText, initialDelay);
+                initialDelay += 1000;
+                appendLineMessage('mobu', `お疲れ様です！「${reportedTask}」を達成したんですね、すごいです！`, initialDelay);
+                initialDelay += 1000;
+
+                setTimeout(() => {
+                    if (Math.random() < 0.5) {
+                        startMoodSharing();
+                    } else {
+                        checkAndSetupEvent();
+                    }
+                }, initialDelay + 1000);
+            }
 
         } else if (screenId === 'screen-cafe') {
+
             playBGM('bgm_cafe_ambience.mp3', true);
             const totalTasks = getTotalTasksCompleted();
             const appPhase = localStorage.getItem('appPhase');
@@ -798,4 +891,120 @@ function showSettingsScreen() {
     if (nicknameInput) {
         nicknameInput.value = currentNickname;
     }
+}
+
+// ===============================================
+// Phase3-X: フェイク通知UI ロジック
+// ===============================================
+
+/**
+ * LINE風のフェイク通知バナーを表示する
+ * @param {string} sender - 送信者名
+ * @param {string} message - メッセージ本文
+ * @param {string} iconSrc - プロフィールアイコンの画像パス
+ */
+/**
+ * LINE風のフェイク通知バナーを表示し、クリックイベントを設定する
+ * @param {string} sender - 送信者名
+ * @param {string} message - メッセージ本文
+ * @param {string} iconSrc - プロフィールアイコンの画像パス
+ * @param {string} notificationType - 通知の種類 ('periodic' or 'onee')
+ */
+function showFakeNotification(sender, message, iconSrc, notificationType) {
+    const banner = document.getElementById('fake-notification-banner');
+    const senderEl = document.getElementById('notification-sender');
+    const messageEl = document.getElementById('notification-message');
+    const iconEl = document.getElementById('notification-icon');
+
+    if (!banner || !senderEl || !messageEl || !iconEl) {
+        console.error('フェイク通知の要素が見つかりません。');
+        return;
+    }
+    
+    // --- 既存の処理 ---
+    senderEl.textContent = sender;
+    messageEl.textContent = message;
+    iconEl.src = iconSrc;
+    playSE('se_line_receive.mp3');
+    banner.classList.add('show');
+
+    // 5秒後に自動で消えるタイマーを設定
+    const hideTimer = setTimeout(() => {
+        banner.classList.remove('show');
+    }, 5000);
+
+    // ★★★ ここからが追加・変更箇所 ★★★
+    // 既存のクリックイベントを一旦リセット（重要）
+    const newBanner = banner.cloneNode(true);
+    banner.parentNode.replaceChild(newBanner, banner);
+
+    // 新しいバナー要素にクリックイベントを設定
+    newBanner.addEventListener('click', function() {
+        // タイマーを解除して、クリック後にバナーが消えないようにする
+        clearTimeout(hideTimer);
+        // バナーを即座に隠す
+        newBanner.classList.remove('show');
+
+        // どの通知がタップされたかを localStorage に保存
+        localStorage.setItem('tappedNotification', JSON.stringify({
+            type: notificationType,
+            sender: sender,
+            message: message,
+            icon: iconSrc
+        }));
+
+        // 瞬き演出を挟んでLINE画面へ遷移
+        playBlinkVideo(() => {
+            showScreen('screen-line');
+        });
+    }, { once: true }); // イベントが一度だけ実行されるように設定
+}
+
+/**
+ * 現在の時刻に基づいて 'morning', 'afternoon', 'night' のいずれかの時間帯を返す
+ * @returns {('morning'|'afternoon'|'night')}
+ */
+function getCurrentTimeOfDay() {
+    const currentHour = new Date().getHours();
+    if (currentHour >= 5 && currentHour < 12) {
+        return 'morning'; // 朝 (5:00 - 11:59)
+    } else if (currentHour >= 12 && currentHour < 18) {
+        return 'afternoon'; // 昼 (12:00 - 17:59)
+    } else {
+        return 'night'; // 夜 (18:00 - 4:59)
+    }
+}
+
+/**
+ * ユーザーが返信スタンプを送信した演出を行う
+ * @param {string} stampSrc - 送信するスタンプ画像のパス
+ */
+function appendUserStampMessage(stampSrc) {
+    const chatArea = document.querySelector('#screen-line .line-chat');
+    if (!chatArea) return;
+
+    playSE('se_stamp_send.mp3'); // スタンプ送信音
+
+    const messageDiv = document.createElement('div');
+    // 既存の user スタイルを流用しつつ、スタンプ用に調整
+    messageDiv.className = 'line-message user new'; 
+    messageDiv.style.padding = '0';
+    messageDiv.style.backgroundColor = 'transparent';
+    messageDiv.style.width = 'fit-content'; // 内容に幅を合わせる
+
+    const stampImg = document.createElement('img');
+    stampImg.src = stampSrc;
+    stampImg.style.width = '100px';
+    stampImg.style.height = '100px';
+
+    messageDiv.appendChild(stampImg);
+    chatArea.appendChild(messageDiv);
+
+    // チャットを最下部にスクロール
+    chatArea.scrollTop = chatArea.scrollHeight;
+
+    // アニメーションが終わったらクラスを削除
+    messageDiv.addEventListener('animationend', () => {
+        messageDiv.classList.remove('new');
+    });
 }

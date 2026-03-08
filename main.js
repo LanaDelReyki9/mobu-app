@@ -4,8 +4,10 @@
 
 // DOMが読み込まれたらアプリを初期化
 document.addEventListener('DOMContentLoaded', function() {
+  
     // ★★★ 修正: 最初にサボり判定を行ってから画面を表示する ★★★
     checkAbandonment(); // まずサボり日数を計算させる
+    handleAppLaunchNotification(); // ★★★ アプリ起動時の通知処理を呼び出す
     
     // その他の初期化処理
     generateUserId();
@@ -331,4 +333,49 @@ if (taskGroups.length > 0) {
             });
         }
     });
+}
+
+/**
+ * アプリ起動時の通知表示を管理する
+ */
+function handleAppLaunchNotification() {
+    const mobuState = getMobuState();
+
+    if (mobuState !== 'normal') {
+        // [A] サボりからの復帰の場合
+        const dialogues = oneeNotificationDialogues[mobuState];
+        if (!dialogues || dialogues.length === 0) return;
+        const message = dialogues[Math.floor(Math.random() * dialogues.length)];
+        // ★修正: 第4引数に通知タイプ 'onee' を追加
+        showFakeNotification('モブ君', message, 'assets/images/mobu_icon_v1.png', 'onee');
+
+    } else {
+        // [B] サボっていない通常起動の場合
+        const storedTasks = localStorage.getItem('selectedTasks');
+        if (!storedTasks) return; // タスクが未選択なら何もしない
+
+        const selectedTasks = JSON.parse(storedTasks).map(taskText => {
+            const label = Array.from(document.querySelectorAll('#screen-task-select label')).find(l => l.textContent.trim() === taskText.trim());
+            return label ? label.getAttribute('for') : null;
+        }).filter(id => id);
+
+        const timeOfDay = getCurrentTimeOfDay();
+        let targetTaskId = null;
+
+        if (timeOfDay === 'morning') {
+            targetTaskId = selectedTasks.find(id => ['task-select-1', 'task-select-3', 'task-select-10'].includes(id));
+        } else if (timeOfDay === 'afternoon') {
+            targetTaskId = selectedTasks.find(id => ['task-select-2', 'task-select-7', 'task-select-5', 'task-select-8', 'task-select-9', 'task-select-11'].includes(id));
+        } else { // night
+            targetTaskId = selectedTasks.find(id => ['task-select-4', 'task-select-6', 'task-select-12'].includes(id));
+        }
+
+        if (targetTaskId) {
+            const message = periodicNotificationDialogues[targetTaskId];
+            if (message) {
+                // ★修正: 第4引数に通知タイプ 'periodic' を追加
+                showFakeNotification('モブ君', message, 'assets/images/mobu_icon_v1.png', 'periodic');
+            }
+        }
+    }
 }
