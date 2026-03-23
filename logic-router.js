@@ -589,29 +589,41 @@ function startMoodSharing() {
     const stampSelector = document.getElementById('mood-stamp-selector');
     const stamps = document.querySelectorAll('.mood-stamp');
     const question = "ところで、今日の気分はどうですか？";
+
     appendLineMessage('mobu', question, 1000);
+
     setTimeout(() => {
         inputBar.style.display = 'none';
         stampSelector.style.display = 'grid';
     }, 1500);
+
+    // ★変更: imgタグのイベントリスナーを設定
     stamps.forEach(stamp => {
+        // イベントリスナーの重複を防ぐために、一度クローンして置き換える
         const newStamp = stamp.cloneNode(true);
         stamp.parentNode.replaceChild(newStamp, stamp);
+        
         newStamp.addEventListener('click', () => {
-            handleMoodStampClick(newStamp.textContent);
-        }, { once: true });
+            // data-mood属性から気分テキストを、src属性から画像パスを取得
+            const mood = newStamp.dataset.mood;
+            const stampSrc = newStamp.src;
+            handleMoodStampClick(mood, stampSrc);
+        }, { once: true }); // 一度クリックされたらイベントを解除
     });
 }
 
 /**
  * 気分スタンプがクリックされたときの処理
- * @param {string} mood 選択された気分のテキスト
+ * @param {string} mood 選択された気分のテキスト (data-mood属性の値)
+ * @param {string} stampSrc クリックされたスタンプ画像のパス (src属性の値)
  */
-function handleMoodStampClick(mood) {
+function handleMoodStampClick(mood, stampSrc) {
     const inputBar = document.getElementById('line-input-bar');
     const stampSelector = document.getElementById('mood-stamp-selector');
-    playSE('se_stamp_send.mp3');
-    appendLineMessage('user', mood, 300);
+    
+    // ★変更: テキストではなく、スタンプ画像を送信する関数を呼び出す
+    appendUserStampMessage(stampSrc);
+
     let reply = "";
     switch (mood) {
         case '元気':
@@ -624,12 +636,13 @@ function handleMoodStampClick(mood) {
             reply = `${mood}、なんですね。教えてくれてありがとうございます。`;
             break;
     }
-    appendLineMessage('mobu', reply, 1300);
+    appendLineMessage('mobu', reply, 1000); // 少し応答を早くする
+
     setTimeout(() => {
         stampSelector.style.display = 'none';
         inputBar.style.display = 'block';
         checkAndSetupEvent();
-    }, 1800);
+    }, 1500); // 全体の流れを少し早める
 }
 
 // ===============================================

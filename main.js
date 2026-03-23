@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeNotificationFeatures();
     
     checkAbandonment(); 
-    scheduleOrCancelAbandonmentNotification();
+ 
 
     // ★★★ ここからが最後の仕上げ ★★★
     // Service Workerからメッセージを受け取るリスナー
@@ -336,87 +336,35 @@ function handleAppLaunchNotification() {
 }
 
 // Service Workerと通知の初期化
-function initializeNotificationFeatures() {
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js')
-      .then(registration => {
-        console.log('Service Workerの登録に成功しました:', registration);
-        // ページ読み込みから5秒後に通知許可を求める
-        setTimeout(() => {
-          Notification.requestPermission().then(permission => {
-            if (permission === 'granted') {
-              console.log('通知の許可が得られました。');
-            }
-          });
-        }, 5000);
-      })
-      .catch(error => console.error('Service Workerの登録に失敗しました:', error));
+async function initializeNotificationFeatures() {
+    if (!('serviceWorker' in navigator)) return;
+  
+    try {
+      const registration = await navigator.serviceWorker.register('/mobu-app/sw.js');
+      console.log('Service Worker登録成功:', registration);
+      const { initializeFCM, setupForegroundMessageHandler } = await import('./firebase-config.js');
+      await initializeFCM();
+      setupForegroundMessageHandler();
+    } catch (error) {
+      console.error('初期化エラー:', error);
+    }
   }
-}
 
-// 定時通知の予約
+// 定時通知の予約（FCMトークンをlocalStorageに保存するだけ）
 function schedulePeriodicNotifications(taskIds) {
-    navigator.serviceWorker.ready.then(registration => {
-        registration.active.postMessage({ type: 'cancel-all-periodic' });
-
-        const taskTimeMap = {
-            'morning': ['task-select-1', 'task-select-3', 'task-select-10'],
-            'afternoon': ['task-select-2', 'task-select-5', 'task-select-7', 'task-select-8', 'task-select-9', 'task-select-11'],
-            'night': ['task-select-4', 'task-select-6', 'task-select-12']
-        };
-
-        const notificationsToSchedule = {};
-        taskIds.forEach(id => {
-            const message = periodicNotificationDialogues[id] || 'タスクの時間だよ！';
-            if (taskTimeMap.morning.includes(id)) {
-                notificationsToSchedule.morning = { time: '07:30', title: '🧸 朝のタスクの時間だよ', message: message };
-            } else if (taskTimeMap.afternoon.includes(id)) {
-                notificationsToSchedule.afternoon = { time: '12:30', title: '🧸 昼のタスクの時間だよ', message: message };
-            } else if (taskTimeMap.night.includes(id)) {
-                notificationsToSchedule.night = { time: '22:30', title: '🧸 夜のタスクの時間だよ', message: message };
-            }
-        });
-
-        Object.values(notificationsToSchedule).forEach(notification => {
-            registration.active.postMessage({ type: 'schedule-periodic', ...notification });
-            console.log(`${notification.time} の通知を予約しました: ${notification.title}`);
-        });
+    const taskTimeMap = {
+      'morning': ['task-select-1', 'task-select-3', 'task-select-10'],
+      'afternoon': ['task-select-2', 'task-select-5', 'task-select-7', 'task-select-8', 'task-select-9', 'task-select-11'],
+      'night': ['task-select-4', 'task-select-6', 'task-select-12']
+    };
+  
+    const schedule = {};
+    taskIds.forEach(id => {
+      if (taskTimeMap.morning.includes(id)) schedule.morning = '07:30';
+      if (taskTimeMap.afternoon.includes(id)) schedule.afternoon = '12:30';
+      if (taskTimeMap.night.includes(id)) schedule.night = '22:30';
     });
-}
-
-// サボり通知の予約・キャンセル
-function scheduleOrCancelAbandonmentNotification() {
-    navigator.serviceWorker.ready.then(registration => {
-        registration.active.postMessage({ type: 'cancel-abandonment' });
-        const mobuState = getMobuState();
-        if (mobuState === 'normal') {
-            const twentyFourHoursFromNow = new Date().getTime() + 24 * 60 * 60 * 1000;
-            const dialogues = oneeNotificationDialogues['onee_lv1'];
-            const message = dialogues[Math.floor(Math.random() * dialogues.length)];
-
-            registration.active.postMessage({
-                type: 'schedule-abandonment',
-                timestamp: twentyFourHoursFromNow,
-                title: '🧸 ちょっとだけ、お休み中かな？',
-                message: message
-            });
-            console.log('24時間後のサボり通知を予約しました。');
-        }
-    });
-}
-
-
-// --- テスト用ボタンの処理 ---
-const testButton = document.getElementById('test-notification-button');
-if (testButton) {
-  testButton.addEventListener('click', () => {
-    navigator.serviceWorker.ready.then(registration => {
-      registration.active.postMessage({
-        type: 'show-test-notification',
-        title: '🧸 テスト通知',
-        message: 'これはテストメッセージです。'
-      });
-      console.log('テスト通知の命令をService Workerに送信しました。');
-    });
-  });
-}
+  
+    localStorage.setItem('notificationSchedule', JSON.stringify(schedule));
+    console.log('通知スケジュールを保存しました:', schedule);
+  }

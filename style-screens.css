@@ -364,17 +364,19 @@ padding: 16px;
 background-color: var(--color-white); / 資料通り白背景 */
 }
 
-/* 個々のスタンプボタン */
+/* 個々のスタンプボタン（画像用に変更） */
 .mood-stamp {
-padding: 10px 5px; / 上下左右のパディング */
-font-family: 'M PLUS Rounded 1c', sans-serif;
-font-size: 14px;
-color: var(--text-dark);
-background-color: var(--bg-base);
-border: 1px solid var(--color-main);
-border-radius: 8px;
-cursor: pointer;
-text-align: center;
+    width: 80px;  /* スタンプの横幅を固定 */
+    height: 80px; /* スタンプの縦幅を固定 */
+    object-fit: contain; /* 画像の比率を保ったまま枠内に収める */
+    cursor: pointer;
+    border-radius: 8px;
+    transition: transform 0.1s ease; /* クリック時のアニメーション用 */
+}
+
+/* スタンプをタップした時に少し小さくなる演出 */
+.mood-stamp:active {
+    transform: scale(0.9);
 }
 
 /* =========================================

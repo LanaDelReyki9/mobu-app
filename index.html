@@ -257,15 +257,16 @@
             <div id="line-input-bar">
                 <p>(入力エリア)</p>
             </div>
-            <!-- 気分共有時のスタンプ選択UI -->
-            <div id="mood-stamp-selector" style="display: none;">
-                <button class="mood-stamp">静か</button>
-                <button class="mood-stamp">元気</button>
-                <button class="mood-stamp">頑張った</button>
-                <button class="mood-stamp">しんどい</button>
-                <button class="mood-stamp">不安</button>
-                <button class="mood-stamp">嬉しい</button>
-            </div>
+           <!-- 気分共有時のスタンプ選択UI -->
+           <div id="mood-stamp-selector" style="display: none;">
+            <!-- ★変更: buttonをimgに置き換え、data属性を追加 -->
+            <img src="assets/stamps/stamp_mood_calm.png" alt="静か" class="mood-stamp" data-mood="静か">
+            <img src="assets/stamps/stamp_mood_happy.png" alt="元気" class="mood-stamp" data-mood="元気">
+            <img src="assets/stamps/stamp_mood_proud.png" alt="頑張った" class="mood-stamp" data-mood="頑張った">
+            <img src="assets/stamps/stamp_mood_tired.png" alt="しんどい" class="mood-stamp" data-mood="しんどい">
+            <img src="assets/stamps/stamp_mood_anxious.png" alt="不安" class="mood-stamp" data-mood="不安">
+            <img src="assets/stamps/stamp_mood_glad.png" alt="嬉しい" class="mood-stamp" data-mood="嬉しい">
+        </div>
             <!-- ★★★ 通知への返信スタンプUI（ここから追加） ★★★ -->
             <div id="notification-reply-area" style="display: none;">
                 <img id="reply-stamp-image" src="" alt="返信スタンプ" class="reply-stamp">
@@ -355,7 +356,7 @@
     <div class="staff-roll-container">
         <div class="staff-roll-content">
             <p>企画・開発</p>
-            <p class="staff-name">なつき</p>
+            <p class="staff-name">山田</p>
             
             <p>制作理念</p>
             <p class="staff-name">（ここに理念を記載）</p>
@@ -377,7 +378,7 @@
 <!-- JavaScriptファイルを読み込み -->
 <script src="logic-state.js"></script>
 <script src="logic-router.js"></script>
-<script src="main.js"></script>
+<script type="module" src="main.js"></script>
 </body>
 </html>
 
