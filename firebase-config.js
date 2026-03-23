@@ -24,12 +24,6 @@ const messaging = getMessaging(app);
  */
 export async function initializeFCM() {
   try {
-    const permission = await Notification.requestPermission();
-    if (permission !== 'granted') {
-      console.log('通知の許可が得られませんでした。');
-      return null;
-    }
-
     const registration = await navigator.serviceWorker.ready;
     const token = await getToken(messaging, {
       vapidKey: VAPID_KEY,
