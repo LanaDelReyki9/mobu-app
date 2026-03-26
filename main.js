@@ -341,7 +341,7 @@ async function initializeNotificationFeatures() {
     if (!('serviceWorker' in navigator)) return;
   
     try {
-      const registration = await navigator.serviceWorker.register('/mobu-app/sw.js');
+        const registration = await navigator.serviceWorker.register('/sw.js');
       console.log('Service Worker登録成功:', registration);
       const { initializeFCM, setupForegroundMessageHandler } = await import('./firebase-config.js');
       await initializeFCM();
