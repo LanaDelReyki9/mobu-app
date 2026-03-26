@@ -4,6 +4,7 @@
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-messaging.js";
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCEUuLlNQ3Y9R4kF0wSb0KvsBbrs9MK5Ns",
@@ -33,6 +34,19 @@ export async function initializeFCM() {
     if (token) {
       console.log('FCMトークン取得成功:', token);
       localStorage.setItem('fcmToken', token);
+
+      // Firestoreにトークンとスケジュールを保存
+      const userId = localStorage.getItem('userId');
+      const schedule = JSON.parse(localStorage.getItem('notificationSchedule') || '{}');
+      const db = getFirestore(app);
+
+      await setDoc(doc(db, 'users', userId), {
+        fcmToken: token,
+        notificationSchedule: schedule,
+        updatedAt: new Date().toISOString()
+      }, { merge: true });
+
+      console.log('Firestoreへの保存成功');
       return token;
     }
   } catch (error) {
