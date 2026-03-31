@@ -4,7 +4,7 @@
 
 // DOMが読み込まれたらアプリを初期化
 document.addEventListener('DOMContentLoaded', function() {
-  
+    generateUserId(); //
     initializeNotificationFeatures();
     
     checkAbandonment(); 
