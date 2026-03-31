@@ -64,6 +64,6 @@ export function setupForegroundMessageHandler() {
     const { title, body, data } = payload.notification || {};
     const notificationType = payload.data?.type || 'periodic';
     const message = body || '';
-    handleOSNotificationClick(notificationType, message);
+    new Notification(title, { body: message });
   });
 }
