@@ -20,18 +20,6 @@ const messaging = firebase.messaging();
 // バックグラウンド時のメッセージ受信
 messaging.onBackgroundMessage((payload) => {
   console.log('バックグラウンドでメッセージを受信:', payload);
-  const { title, body } = payload.notification || {};
-  const notificationType = payload.data?.type || 'periodic';
-
-  self.registration.showNotification(title || '🧸 モブ君からのお知らせ', {
-    body: body || '',
-    icon: '/assets/images/icon_profile_48.png',
-    data: {
-      url: '/',
-      type: notificationType,
-      message: body || ''
-    }
-  });
 });
 
 // 通知クリック時の処理
