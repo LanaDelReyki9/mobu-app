@@ -28,9 +28,9 @@ messaging.onBackgroundMessage((payload) => {
     self[key] = true;
   }
 
-  const title = payload.notification?.title || "通知";
-  const body = payload.notification?.body || "";
-  const tag = payload.webpush?.notification?.tag || "default";
+  const title = payload.data?.title || "通知";
+const body = payload.data?.body || "";
+const tag = payload.data?.tag || "default";
 
   self.registration.showNotification(title, {
     body: body,
