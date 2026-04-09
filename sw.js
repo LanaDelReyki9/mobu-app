@@ -44,7 +44,7 @@ self.addEventListener('notificationclick', (event) => {
   console.log('通知がクリックされました', event.notification);
   event.notification.close();
 
-  const targetUrl = 'https://lanadelreyki9.github.io/mobu-app/';
+  const targetUrl = 'https://lanadelreyki9.github.io/mobu-app/?from=notification';
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {

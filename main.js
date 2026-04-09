@@ -38,7 +38,16 @@ document.addEventListener('DOMContentLoaded', function() {
     
     generateUserId();
     updateHomeTasks();
-    
+    const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('from') === 'notification') {
+    history.replaceState(null, null, window.location.pathname);
+    const appPhase = localStorage.getItem('appPhase');
+    if (appPhase === 'main_loop') {
+        updateHomeTasks();
+        showScreen('screen-home');
+        return;
+    }
+}
     showScreen('screen-welcome');
 
     // --- 各画面のイベントリスナーを登録 ---
