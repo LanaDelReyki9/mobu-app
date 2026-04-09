@@ -304,7 +304,6 @@ function handleOSNotificationClick(notificationType, message) {
  * アプリ起動時の通知表示を管理する（通常起動時のみ）
  */
 function handleAppLaunchNotification() {
-    // この関数は、OS通知経由"以外"で起動した時だけ呼ばれる
     const mobuState = getMobuState();
 
     if (mobuState !== 'normal') {
@@ -316,25 +315,43 @@ function handleAppLaunchNotification() {
         const storedTaskIds = JSON.parse(localStorage.getItem('selectedTaskIds') || '[]');
         if (storedTaskIds.length === 0) return;
 
-        const timeOfDay = getCurrentTimeOfDay();
-        let targetTaskId = null;
+        const nickname = localStorage.getItem('nickname') || 'あなた';
 
-        if (timeOfDay === 'morning') {
-            targetTaskId = storedTaskIds.find(id => ['task-select-1', 'task-select-3', 'task-select-10'].includes(id));
-        } else if (timeOfDay === 'afternoon') {
-            targetTaskId = storedTaskIds.find(id => ['task-select-2', 'task-select-7', 'task-select-5', 'task-select-8', 'task-select-9', 'task-select-11'].includes(id));
-        } else { // night
-            targetTaskId = storedTaskIds.find(id => ['task-select-4', 'task-select-6', 'task-select-12'].includes(id));
+        // 選択中タスクに対応するセリフだけに絞る
+        const candidates = periodicNotificationDialogues.filter(d =>
+            storedTaskIds.includes(d.taskId)
+        );
+        if (candidates.length === 0) return;
+
+        // 表示済み管理
+        const seenKey = 'iine_seen_indices';
+        let seen = JSON.parse(localStorage.getItem(seenKey) || '[]');
+        const candidateIndices = candidates.map(d => periodicNotificationDialogues.indexOf(d));
+        const unseenIndices = candidateIndices.filter(i => !seen.includes(i));
+
+        let chosenIndex;
+        if (unseenIndices.length === 0) {
+            seen = [];
+            localStorage.setItem(seenKey, JSON.stringify(seen));
+            chosenIndex = candidateIndices[Math.floor(Math.random() * candidateIndices.length)];
+        } else {
+            chosenIndex = unseenIndices[Math.floor(Math.random() * unseenIndices.length)];
         }
 
-        if (targetTaskId) {
-            const message = periodicNotificationDialogues[targetTaskId];
-            if (message) {
-                showFakeNotification('モブ君', message, 'assets/images/mobu_icon_v1.png', 'periodic');
-            }
-        }
+        seen.push(chosenIndex);
+        localStorage.setItem(seenKey, JSON.stringify(seen));
+
+        const chosen = periodicNotificationDialogues[chosenIndex];
+        const message = chosen.text.replace(/\$\{nickname\}/g, nickname);
+
+        // タイムスタンプをセット
+        const timestampEl = document.getElementById('notification-timestamp');
+        if (timestampEl) timestampEl.textContent = chosen.time;
+
+        showFakeNotification('モブ君', message, 'assets/images/mobu_icon_v1.png', 'periodic');
     }
 }
+
 
 // Service Workerと通知の初期化
 async function initializeNotificationFeatures() {

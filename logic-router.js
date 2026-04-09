@@ -38,21 +38,81 @@ const oneeNotificationDialogues = {
 
 // 資料13より: タスクに応じた定時通知メッセージ
 // キーは index.html のタスク選択チェックボックスのIDに対応
-const periodicNotificationDialogues = {
-    "task-select-1": "白湯、ちゃんと飲んでます？身体のためにも水分補給していきましょうね。", // 朝食前に白湯を飲む
-    "task-select-3": "朝のフルーツ、何入れるんですか？朝ごはんにフルーツがあるだけでちょっと嬉しいですよね。", // 朝ごはんにフルーツを足す
-    "task-select-10": "よく眠れました？あなたの肌も労わってあげてくださいね。", // スキンケアを丁寧にする
-    "task-select-2": "間食、我慢できてます？俺は我慢してるけど、昨日夢の中でケーキ食べちゃった…。", // 間食を1回だけ我慢
-    "task-select-7": "やっとお昼ですね。肩凝ってません？軽くストレッチして少し休憩しますか？", // 1分ストレッチ
-    "task-select-5": "部屋の片づけ、目の前のもの5つ片づけるだけでも、スッキリするんですよね。", // 1日1カ所だけ片づけ
-    "task-select-4": "もう夜ですね。スマホ、楽しいですけど、そろそろ目を休めましょうか。", // 寝る前スマホを15分おやすみ
-    "task-select-6": "今日の気持ち、ひとことでもいいから聞かせてほしいです。", // 今日の“ありがとう”をひとつ思い出す
-    "task-select-12": "疲れてても深呼吸だけしてみますか？ふぅ～。ちょっと力抜けますね！", // 深呼吸を3回する
-    // 以下は資料13に未記載だが、選択可能なタスクのためダミーを追加
-    "task-select-8": "今日も階段、選びましたか？その小さな選択が、未来のあなたを作りますよ。", // 階段を選ぶ
-    "task-select-9": "背すじ、気づいたら丸まってません？ちょっと伸ばして、ついでに深呼吸しましょうか。", // 背筋を伸ばす時間を意識
-    "task-select-11": "手って、一番働き者なのにケアを後回しにしちゃいますよね。ハンドクリーム、塗ってあげてくださいね。" // リップやハンドケアを忘れずに
-};
+const periodicNotificationDialogues = [
+    // 🌞 朝7:30 - タスク①白湯
+    { taskId: "task-select-1", time: "7:30", text: "白湯、ちゃんと飲んでます？身体のためにも水分補給していきましょうね。" },
+    { taskId: "task-select-1", time: "7:30", text: "白湯ってSNS映えするような華やかさは無いですけど、地味だから続けやすいですよね。" },
+    { taskId: "task-select-1", time: "7:30", text: "俺も今、白湯飲みながらメッセージ打ってます。……ちょっと一緒に頑張ってる気がしますね。" },
+    { taskId: "task-select-1", time: "7:30", text: "飲み忘れたら今でも遅くないですよ。体がぽかぽかしてくるの、気持ちいいですよね。" },
+    { taskId: "task-select-1", time: "7:30", text: "白湯、飲みました？　体の中から少しずつ目を覚ましましょうね。" },
+
+    // 🌞 朝7:30 - タスク②フルーツ
+    { taskId: "task-select-3", time: "7:30", text: "朝のフルーツ、何入れるんですか？朝ごはんにフルーツがあるだけでちょっと嬉しいですよね。" },
+    { taskId: "task-select-3", time: "7:30", text: "朝に好きなフルーツがあるだけで、起きるのがちょっと楽しみになりません？" },
+    { taskId: "task-select-3", time: "7:30", text: "切ったり、洗ったりさえ面倒な時ありません？俺は今日カットフルーツにしました。" },
+    { taskId: "task-select-3", time: "7:30", text: "最近はフルーツがあるから、という理由で朝が好きになってきました。${nickname}はどうですか？" },
+
+    // 🌞 朝7:30 - タスク③スキンケア（朝）
+    { taskId: "task-select-10", time: "7:30", text: "よく眠れました？${nickname}の肌も労わってあげてくださいね。" },
+    { taskId: "task-select-10", time: "7:30", text: "朝のスキンケア、急いでるとつい雑になっちゃうんですよね。今日はゆっくり、ちょっとだけ丁寧にしてみます？" },
+    { taskId: "task-select-10", time: "7:30", text: "良い香りの化粧水ってありますよね。好きな香りと一緒なら、楽しくケアできそうだと思いません？" },
+
+    // 🌤 昼12:30 - タスク④間食
+    { taskId: "task-select-2", time: "12:30", text: "間食、我慢できてます？俺は我慢してるけど、昨日夢の中でケーキ食べちゃった…。" },
+    { taskId: "task-select-2", time: "12:30", text: "今朝、無意識にスイーツ特集見てました…。キツいのはきっと最初だけですよね！" },
+    { taskId: "task-select-2", time: "12:30", text: "「今日はいいかな」って思う日もありますよね。お互い励ましあいながら頑張りましょう！" },
+    { taskId: "task-select-2", time: "12:30", text: "間食を我慢すると、ごはんがすごくおいしく感じる事に気づきました😊" },
+    { taskId: "task-select-2", time: "12:30", text: "甘い誘惑、来ました？俺もさっき危なかったです。お互いセーフでしたね…！" },
+
+    // 🌤 昼12:30 - タスク⑤ストレッチ
+    { taskId: "task-select-7", time: "12:30", text: "やっとお昼ですね。肩凝ってません？軽くストレッチして少し休憩しますか？" },
+    { taskId: "task-select-7", time: "12:30", text: "忙しい中で1分とるって、意外と難しい。でも${nickname}なら、ちゃんとやってそうだなって思います。" },
+    { taskId: "task-select-7", time: "12:30", text: "仕事の合間にぐーっと伸びるだけで、少し目が覚めるんですよね。もうひと頑張りしましょうか！" },
+
+    // 🌤 昼12:30 - タスク⑥階段
+    { taskId: "task-select-8", time: "12:30", text: "今日も階段、選びました？その小さな選択、大きな一歩だと思います。" },
+    { taskId: "task-select-8", time: "12:30", text: "階段を上るっていうだけでもちょっとした眠気ざましになりますね！" },
+    { taskId: "task-select-8", time: "12:30", text: "俺はジム通いって続かなくて…階段使う位なら、続いてます。${nickname}はどうですか？" },
+
+    // 🌤 昼12:30 - タスク⑦背筋
+    { taskId: "task-select-9", time: "12:30", text: "背すじ、気づいたら丸まってません？ちょっと伸ばして、ついでに深呼吸しましょうか？" },
+    { taskId: "task-select-9", time: "12:30", text: "ハッ！俺また猫背になってました。${nickname}はどうですか？" },
+    { taskId: "task-select-9", time: "12:30", text: "俺、集中しすぎると、猫背になるみたい…。${nickname}は大丈夫？" },
+
+    // 🌤 昼12:30 - タスク⑧ハンドケア
+    { taskId: "task-select-11", time: "12:30", text: "手って、一番働き者なのにケアを後回しにしちゃいますよね。ハンドクリーム、塗ってあげてくださいね。" },
+    { taskId: "task-select-11", time: "12:30", text: "好きな香りのハンドクリームだと、塗るだけでちょっとリフレッシュしますよね！" },
+    { taskId: "task-select-11", time: "12:30", text: "忙しいとリップケアって後回しにしちゃいますよね。${nickname}は忘れてませんか？" },
+
+    // 🌤 昼12:30 - タスク⑨片づけ
+    { taskId: "task-select-5", time: "12:30", text: "部屋の片づけ、目の前のもの5つ片づけるだけでも、スッキリするんですよね。" },
+    { taskId: "task-select-5", time: "12:30", text: "「1カ所だけ」って、いいルールですよね。完璧じゃなくていいのが続けやすいです。" },
+    { taskId: "task-select-5", time: "12:30", text: "頭使う作業してると、片付けっていう単純作業が気分転換になりますね！" },
+    { taskId: "task-select-5", time: "12:30", text: "片づけてるうちに、頭空っぽになる瞬間ありません？俺、あの時間好きなんです。" },
+    { taskId: "task-select-5", time: "12:30", text: "俺、最近、休憩と片づけがセットになってます。${nickname}は順調ですか？" },
+
+    // 🌙 夜22:30 - タスク⑩スマホ休憩
+    { taskId: "task-select-4", time: "22:30", text: "もう夜ですね。スマホ、楽しいですけど、そろそろ目を休めましょうか。" },
+    { taskId: "task-select-4", time: "22:30", text: "スマホを置いて、静かな時間を作るのって贅沢ですよね。ホットアイマスクもあれば最高です。" },
+    { taskId: "task-select-4", time: "22:30", text: "${nickname}に送るこのメッセージを最後に、俺はスマホ置きます。${nickname}と同じ時間に休むって思うと、なんか嬉しいです。" },
+
+    // 🌙 夜22:30 - タスク⑫ありがとう
+    { taskId: "task-select-6", time: "22:30", text: "今日の気持ち、ひとことでもいいから聞かせてほしいです。" },
+    { taskId: "task-select-6", time: "22:30", text: "俺は今、一緒に頑張ってくれる${nickname}に「ありがとう」って言いたい気分です。" },
+    { taskId: "task-select-6", time: "22:30", text: "誰かに感謝できる日って、それだけで幸せですよね。" },
+    { taskId: "task-select-6", time: "22:30", text: "${nickname}が今日「ありがとう」って思った相手、きっと笑顔になってますよ。" },
+    { taskId: "task-select-6", time: "22:30", text: "ありがとうを思い出せたら、きっと幸せな気持ちで眠れますね。" },
+
+    // 🌙 夜22:30 - タスク⑬深呼吸
+    { taskId: "task-select-12", time: "22:30", text: "疲れてても深呼吸だけしてみますか？ふぅ～。ちょっと力抜けますね！" },
+    { taskId: "task-select-12", time: "22:30", text: "意識してゆっくり息を吐くだけで、今日の疲れが少し抜けますね。${nickname}も一緒にどうですか？" },
+    { taskId: "task-select-12", time: "22:30", text: "ため息をつくと幸せが逃げるなんて、言いますけど、深呼吸ならセーフです！今、少し試してみません？" },
+
+    // 🌙 夜22:30 - タスク⑭スキンケア（夜）
+    { taskId: "task-select-10", time: "22:30", text: "お疲れ様です。夜のスキンケア、頑張れそうですか？無理のない範囲で続けましょうね。" },
+    { taskId: "task-select-10", time: "22:30", text: "夜のスキンケアって、癒しの時間ですよね。${nickname}の肌が、ゆっくり休めますように。" },
+    { taskId: "task-select-10", time: "22:30", text: "疲れた顔も、優しく触れるだけで少し元気になる気がしますね。${nickname}も、頑張った自分をちゃんと労ってください。" },
+];
 
 // 資料7を基にした、サボりからの復帰時のセリフ集
 const recoveryDialogues = {
@@ -1070,3 +1130,59 @@ const cafeEventData = {
       }
     ]
 };
+
+/**
+ * ユーザーが選択中のタスクに対応するセリフをランダムで1つ選んでIINEバナーを表示する
+ */
+function showPeriodicIineNotification() {
+    const nickname = localStorage.getItem('nickname') || 'あなた';
+
+    // ユーザーが選択中のタスクIDを取得
+    const selectedTaskIds = Array.from(
+        document.querySelectorAll('.task-select-checkbox:checked')
+    ).map(el => el.id);
+
+    if (selectedTaskIds.length === 0) return;
+
+    // 選択中タスクに対応するセリフだけに絞る
+    const candidates = periodicNotificationDialogues.filter(d =>
+        selectedTaskIds.includes(d.taskId)
+    );
+    if (candidates.length === 0) return;
+
+    // 表示済みリストを取得
+    const seenKey = 'iine_seen_indices';
+    let seen = JSON.parse(localStorage.getItem(seenKey) || '[]');
+
+    // 未表示のものに絞る。全部見たらリセット
+    let unseen = candidates.filter((_, i) => !seen.includes(candidates.indexOf(_)));
+    // ※インデックスはperiodicNotificationDialogues全体の位置で管理
+    const candidateIndices = candidates.map(d => periodicNotificationDialogues.indexOf(d));
+    const unseenIndices = candidateIndices.filter(i => !seen.includes(i));
+
+    let chosenIndex;
+    if (unseenIndices.length === 0) {
+        // 全種表示済み → リセット
+        seen = [];
+        localStorage.setItem(seenKey, JSON.stringify(seen));
+        chosenIndex = candidateIndices[Math.floor(Math.random() * candidateIndices.length)];
+    } else {
+        chosenIndex = unseenIndices[Math.floor(Math.random() * unseenIndices.length)];
+    }
+
+    // 表示済みに追加
+    seen.push(chosenIndex);
+    localStorage.setItem(seenKey, JSON.stringify(seen));
+
+    const chosen = periodicNotificationDialogues[chosenIndex];
+
+    // ニックネーム置換
+    const message = chosen.text.replace(/\$\{nickname\}/g, nickname);
+
+    // タイムスタンプをセット
+    const timestampEl = document.getElementById('notification-timestamp');
+    if (timestampEl) timestampEl.textContent = chosen.time;
+
+    // バナー表示
+    showFakeNotification('モブ君', message, 'assets/images/mobu_icon_v1.png', 'periodic');
+}
