@@ -48,7 +48,7 @@ if (urlParams.get('from') === 'notification') {
         return;
     }
 }
-    showScreen('screen-welcome');
+showSplashScreen();
 
     // --- 各画面のイベントリスナーを登録 ---
 
@@ -407,3 +407,38 @@ async function requestNotificationPermission() {
       console.log('通知が許可されませんでした。');
     }
   }
+
+  /**
+ * フラッシュ画面（世界B）を表示し、暗転＋瞬き音で世界Aへ遷移する
+ */
+  function showSplashScreen() {
+    const fadeOverlay = document.getElementById('fade-overlay');
+
+    const playBlink = () => {
+        const blink = new Audio();
+        blink.src = 'assets/sounds/blink.mp3';
+        blink.onerror = () => { blink.src = 'assets/sounds/blink.webm'; };
+        blink.play().catch(() => {});
+    };
+
+    showScreen('screen-splash');
+
+    setTimeout(() => {
+        // 1回目のパチッ＋暗転開始
+        playBlink();
+        fadeOverlay.classList.add('active');
+
+        setTimeout(() => {
+            // 暗転中にウェルカム画面へ切り替え
+            showScreen('screen-welcome');
+
+            setTimeout(() => {
+                // 2回目のパチッ＋暗転解除
+                playBlink();
+                fadeOverlay.classList.remove('active');
+            }, 100);
+
+        }, 500);
+
+    }, 1000);
+}
