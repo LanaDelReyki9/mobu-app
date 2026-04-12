@@ -11,7 +11,7 @@
         "purpose": "any" 
       },
       {
-        "src": "assets/icons/icon-android-fg.png?v=2",
+        "src": "assets/icons/icon-maskable-v2.png",
         "sizes": "512x512",
         "type": "image/png",
         "purpose": "maskable"
