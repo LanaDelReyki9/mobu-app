@@ -11,6 +11,15 @@
     <link rel="stylesheet" href="style-base.css">
     <link rel="stylesheet" href="style-screens.css">
 </head>
+<button onclick="deferredPrompt.prompt()">インストール</button>
+<script>
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+});
+</script>
+
 <body>
     <!-- ★★★ Phase3-X: フェイク通知UI ★★★ -->
     <div id="fake-notification-banner" class="fake-notification">
