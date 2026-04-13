@@ -59,8 +59,7 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
-// PWAインストール要件を満たすための空のfetchイベントリスナー
+// 古い空のリスナーは削除し、これに差し替え
 self.addEventListener('fetch', (event) => {
-  // ここは空（またはネットワークにそのまま流す設定）でOKです。
-  // これが存在すること自体が、Androidで「インストールボタン」を出すための条件です。
+  event.respondWith(fetch(event.request));
 });
