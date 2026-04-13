@@ -39,7 +39,6 @@ const tag = payload.data?.tag || "default";
 });
 
 // 通知クリック時の処理
-// 通知クリック時の処理
 self.addEventListener('notificationclick', (event) => {
   console.log('通知がクリックされました', event.notification);
   event.notification.close();
@@ -58,4 +57,10 @@ self.addEventListener('notificationclick', (event) => {
       }
     })
   );
+});
+
+// PWAインストール要件を満たすための空のfetchイベントリスナー
+self.addEventListener('fetch', (event) => {
+  // ここは空（またはネットワークにそのまま流す設定）でOKです。
+  // これが存在すること自体が、Androidで「インストールボタン」を出すための条件です。
 });
