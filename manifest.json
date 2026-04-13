@@ -1,23 +1,23 @@
-"name": "なりたい私とモブくん",
-"short_name": "なりモブ",
-"start_url": ".",
-"display": "standalone",
-"icons": [
-  {
-    "src": "assets/icons/icon-ios.png",
-    "sizes": "512x512",
-    "type": "image/png",
-    "purpose": "any"
-  },
-
-  {
-    "src": "assets/icons/icon-android-fg.png",
-    "sizes": "512x512",
-    "type": "image/png",
-    "purpose": "maskable"
-
-  }
-
-]
-
+{
+  "name": "なりたい私とモブくん",
+  "short_name": "なりモブ",
+  "start_url": "/mobu-app/",
+  "scope": "/mobu-app/",
+  "display": "standalone",
+  "theme_color": "#badac5",
+  "background_color": "#ffffff",
+  "icons": [
+    {
+      "src": "assets/icons/icon-192-v3.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icons/icon-512-v3.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
 }
