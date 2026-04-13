@@ -12,21 +12,10 @@
       "src": "assets/icons/icon-fg-final.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "foreground"
+      "purpose": "any"
     },
     {
-      "src": "assets/icons/icon-fg-final.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "foreground"
-    },
-    {
-      "src": "#f7d9d9",
-      "type": "application/x-web-icon",
-      "purpose": "background"
-    },
-    {
-      "src": "assets/icons/icon-fg-final.png",
+      "src": "assets/icons/icon-maskable.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
