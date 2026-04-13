@@ -1,23 +1,35 @@
 {
   "name": "なりたい私とモブくん",
   "short_name": "なりモブ",
+  "id": "/mobu-app/",
   "start_url": "/mobu-app/",
   "scope": "/mobu-app/",
   "display": "standalone",
   "theme_color": "#badac5",
-  "background_color": "#ffffff",
+  "background_color": "#f7d9d9",
   "icons": [
     {
-      "src": "assets/icons/icon-192-v3.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "assets/icons/icon-512-v3.png",
+      "src": "assets/icons/icon-fg-final.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "foreground"
+    },
+    {
+      "src": "assets/icons/icon-fg-final.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "foreground"
+    },
+    {
+      "src": "#f7d9d9",
+      "type": "application/x-web-icon",
+      "purpose": "background"
+    },
+    {
+      "src": "assets/icons/icon-fg-final.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
