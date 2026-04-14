@@ -182,12 +182,9 @@ function resetAllData() {
 // ===============================================
 
 function recordTodayAchievement(count) {
-    const today = new Date().toISOString().split('T')[0]; // 'YYYY-MM-DD'
+    const today = new Date().toISOString().split('T')[0];
     const data = JSON.parse(localStorage.getItem('achievementLog') || '{}');
-    data[today] = count; // その日の達成タスク数を上書き保存
+    const existing = data[today] || 0;
+    data[today] = Math.min(existing + count, 3); // 最大3で上限を設ける
     localStorage.setItem('achievementLog', JSON.stringify(data));
-}
-
-function getAchievementLog() {
-    return JSON.parse(localStorage.getItem('achievementLog') || '{}');
 }
