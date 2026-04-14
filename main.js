@@ -190,6 +190,7 @@ showSplashScreen();
                 setPreviousTotalTasks(currentTotal);
                 addTasksCompleted(completedTasks.length);
                 recordTodayAchievement(completedTasks.length);
+                renderCalendar(currentCalendarDate);
 
                 if (currentTotal === 0) {
                     localStorage.setItem('isFirstReport', 'true');
