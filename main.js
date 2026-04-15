@@ -290,6 +290,15 @@ showSplashScreen();
         });
     }
 
+    document.getElementById('cal-title').addEventListener('click', (e) => {
+        if (e.detail === 3) {
+            const newVal = window.prompt('累積タスク数を入力してね', '8');
+            if (newVal !== null) {
+                localStorage.setItem('totalTasksCompleted', newVal);
+                location.reload();
+            }
+        }
+    });
 
     // カレンダー初期化
     renderCalendar(new Date());
