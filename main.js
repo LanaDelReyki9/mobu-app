@@ -469,8 +469,8 @@ function renderCalendar(date) {
     // テーマ設定
     const themes = [
         { color: '#F2C9DB', dark: '#c97fa0' }, // ピンク (0-9)
-        { color: '#FFF4D7', dark: '#c9a84c' }, // イエロー (10-19)
-        { color: '#D0E0FB', dark: '#6a8fd8' }, // ブルー (20-29)
+        { color: '#D0E0FB', dark: '#6a8fd8' }, // ブルー (10-19)
+        { color: '#FFF4D7', dark: '#c9a84c' }, // イエロー (20-29)
         { color: '#E6E6FA', dark: '#8a7fc9' }, // ラベンダー (30+)
     ];
     const themeIndex = Math.min(Math.floor(totalTasks / 10), 3);
