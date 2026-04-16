@@ -340,6 +340,32 @@ function showScreen(screenId) {
         window.scrollTo(0, 0);
 
         // --- 各画面表示時のユニークな処理 ---
+        // --- B-1: ホーム画面の完了ボタン制御 ---
+        if (screenId === 'screen-home') {
+            const today = new Date().toISOString().split('T')[0];
+            const log = getAchievementLog();
+            const todayCount = log[today] || 0;
+            const btn = document.querySelector('#screen-home .btn-primary');
+            const msg = document.getElementById('task-limit-message');
+
+            if (todayCount >= 3) {
+                btn.disabled = true;
+                btn.style.pointerEvents = 'auto';
+                btn.onclick = function() {
+                    if (!msg) return;
+                    msg.style.display = 'block';
+                    msg.style.opacity = '1';
+                    clearTimeout(msg._hideTimer);
+                    msg._hideTimer = setTimeout(() => {
+                        msg.style.opacity = '0';
+                        setTimeout(() => { msg.style.display = 'none'; }, 400);
+                    }, 3000);
+                };
+            } else {
+                btn.style.pointerEvents = '';
+                btn.onclick = null;
+            }
+        }
         if (screenId === 'screen-line') {
             // --- UI要素を取得 ---
             const chatArea = document.querySelector('#screen-line .line-chat');
