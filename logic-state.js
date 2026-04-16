@@ -22,21 +22,37 @@ return userId;
 LocalStorageに保存されたタスクを読み込み、ホーム画面の表示を更新する
 */
 function updateHomeTasks() {
-const storedTasks = localStorage.getItem('selectedTasks');
-if (storedTasks) {
-const tasks = JSON.parse(storedTasks);
-const homeLabels = document.querySelectorAll('.task-chip-home label');
-const homeInputs = document.querySelectorAll('.task-chip-home input');
+    const storedTasks = localStorage.getItem('selectedTasks');
+    const storedIds   = JSON.parse(localStorage.getItem('selectedTaskIds') || '[]');
+    if (!storedTasks) return;
 
-tasks.forEach((taskName, index) => {
-if (homeLabels[index]) homeLabels[index].textContent = taskName;
-if (homeInputs[index]) {
-homeInputs[index].value = taskName;
-homeInputs[index].checked = false;
-}
-});
+    const tasks = JSON.parse(storedTasks);
+    const chips = document.querySelectorAll('.task-chip-home');
+    const completed = getCompletedToday();
 
-}
+    chips.forEach((chip, index) => {
+        const label = chip.querySelector('.chip-label');
+        const iconWrap = chip.querySelector('.chip-icon-wrap');
+
+        // タスク名をセット
+        if (label && tasks[index]) label.textContent = tasks[index];
+
+        // カテゴリー背景色をセット
+        const taskId = storedIds[index];
+        if (taskId && TASK_CATEGORY_MAP[taskId]) {
+            chip.style.backgroundColor = TASK_CATEGORY_MAP[taskId];
+        }
+
+        // 今日完了済みのチップを復元
+        if (completed && completed.taskIndices.includes(index)) {
+            chip.classList.add('completed');
+            iconWrap.innerHTML = '';
+            iconWrap.appendChild(createFlowerSVG());
+        } else {
+            chip.classList.remove('completed');
+            iconWrap.innerHTML = '<span class="chip-icon-placeholder"></span>';
+        }
+    });
 }
 
 // ===============================================

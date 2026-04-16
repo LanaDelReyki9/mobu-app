@@ -161,77 +161,91 @@ showSplashScreen();
     }
 
     // B-1: ホーム画面
-    const homeScreen = document.getElementById('screen-home');
-    if (homeScreen) {
-        const homeTaskCheckboxes = homeScreen.querySelectorAll('.task-chip-home input[type="checkbox"]');
-        const homeCompleteButton = homeScreen.querySelector('.btn-primary');
-        const profileIcon = document.getElementById('nav-profile-icon');
-        const settingsIcon = document.getElementById('nav-settings-icon');
+   // B-1: ホーム画面
+const homeScreen = document.getElementById('screen-home');
+if (homeScreen) {
+    const homeChips = homeScreen.querySelectorAll('.task-chip-home');
+    const homeCompleteButton = homeScreen.querySelector('.btn-primary');
+    const profileIcon = document.getElementById('nav-profile-icon');
+    const settingsIcon = document.getElementById('nav-settings-icon');
 
-        if (homeTaskCheckboxes.length > 0 && homeCompleteButton) {
-            homeTaskCheckboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    updateLastLoginDate();
-                    const checkedCount = homeScreen.querySelectorAll('.task-chip-home input[type="checkbox"]:checked').length;
-                    homeCompleteButton.disabled = (checkedCount === 0);
-                });
-            });
+    // チップをタップしたらチェック状態をトグル（完了済みは無視）
+    homeChips.forEach((chip) => {
+        chip.addEventListener('click', function() {
+            if (this.classList.contains('completed')) return;
+            const checkbox = this.querySelector('.chip-checkbox');
+            checkbox.checked = !checkbox.checked;
 
-            homeCompleteButton.addEventListener('click', function() {
-                const today = new Date().toISOString().split('T')[0];
-    const log = getAchievementLog();
-    if ((log[today] || 0) >= 3) return; // 3個以上ならこの後の処理を全部無視する
-    
-                // 完了ボタンが押された時の処理の「最後」にこれを追加
-if (typeof showScreen === 'function') { showScreen('screen-home'); }
-                if (this.disabled) return;
-                updateLastLoginDate();
-                
-                const completedTasks = [];
-                homeScreen.querySelectorAll('.task-chip-home input[type="checkbox"]:checked').forEach(checkbox => {
-                    completedTasks.push(checkbox.parentElement.querySelector('label').textContent);
-                });
+            // 完了ボタンの活性制御
+            const checkedCount = homeScreen.querySelectorAll('.chip-checkbox:checked').length;
+            homeCompleteButton.disabled = (checkedCount === 0);
+        });
+    });
 
-                const currentTotal = getTotalTasksCompleted();
-                setPreviousTotalTasks(currentTotal);
-                addTasksCompleted(completedTasks.length);
-                recordTodayAchievement(completedTasks.length);
-                renderCalendar(currentCalendarDate);
+    // 完了ボタン
+    homeCompleteButton.addEventListener('click', function() {
+        if (this.disabled) return;
+        updateLastLoginDate();
 
-                if (currentTotal === 0) {
-                    localStorage.setItem('isFirstReport', 'true');
-                    localStorage.setItem('tempCompletedTasks', JSON.stringify(completedTasks));
-                    playBlinkVideo(() => {
-                        showScreen('screen-cafe');
-                    });
-                } else {
-                    playBlinkVideo(() => {
-                        setupReportScreen(completedTasks);
-                    });
-                }
-                
-                homeTaskCheckboxes.forEach(checkbox => {
-                    checkbox.checked = false;
-                });
-                homeCompleteButton.disabled = true;
-            });
+        // 今日の上限チェック（getGameDate基準）
+        const today = getGameDate();
+        const log = getAchievementLog();
+        if ((log[today] || 0) >= 3) return;
+
+        const completedTasks = [];
+        const completedIndices = [];
+
+        homeChips.forEach((chip, index) => {
+            const checkbox = chip.querySelector('.chip-checkbox');
+            if (checkbox.checked) {
+                completedTasks.push(chip.querySelector('.chip-label').textContent);
+                completedIndices.push(index);
+            }
+        });
+
+        // お花演出
+        completedIndices.forEach(i => completeChip(homeChips[i]));
+
+        // データ保存
+        const currentTotal = getTotalTasksCompleted();
+        setPreviousTotalTasks(currentTotal);
+        addTasksCompleted(completedTasks.length);
+        recordTodayAchievement(completedTasks.length);
+
+        // 既存の完了済みインデックスとマージして保存
+        const existing = getCompletedToday();
+        const existingIndices = existing ? existing.taskIndices : [];
+        const mergedIndices = [...new Set([...existingIndices, ...completedIndices])];
+        saveCompletedToday(mergedIndices);
+
+        renderCalendar(currentCalendarDate);
+        homeCompleteButton.disabled = true;
+
+        // 画面遷移
+        if (currentTotal === 0) {
+            localStorage.setItem('isFirstReport', 'true');
+            localStorage.setItem('tempCompletedTasks', JSON.stringify(completedTasks));
+            playBlinkVideo(() => { showScreen('screen-cafe'); });
+        } else {
+            playBlinkVideo(() => { setupReportScreen(completedTasks); });
         }
+    });
 
-        if (profileIcon) {
-            profileIcon.addEventListener('click', function() {
-                updateLastLoginDate();
-                showProfileScreen();
-                playProfileRewardAnimationIfNeeded();
-            });
-        }
-
-        if (settingsIcon) {
-            settingsIcon.addEventListener('click', function() {
-                updateLastLoginDate();
-                showSettingsScreen();
-            });
-        }
+    if (profileIcon) {
+        profileIcon.addEventListener('click', function() {
+            updateLastLoginDate();
+            showProfileScreen();
+            playProfileRewardAnimationIfNeeded();
+        });
     }
+
+    if (settingsIcon) {
+        settingsIcon.addEventListener('click', function() {
+            updateLastLoginDate();
+            showSettingsScreen();
+        });
+    }
+}
 
     // C-2: LINE画面
     const lineBackIcon = document.querySelector('#screen-line .line-header img');
@@ -508,7 +522,7 @@ function renderCalendar(date) {
 
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const today = new Date().toISOString().split('T')[0];
+    const today = getGameDate();
 
     // 空白セル
     for (let i = 0; i < firstDay; i++) {
