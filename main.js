@@ -441,27 +441,7 @@ showSplashScreen();
         });
     }
 
-    const calTitleEl = document.getElementById('cal-title');
-if (calTitleEl) {
-    calTitleEl.addEventListener('click', (e) => {
-        if (e.detail === 3) {
-            const newVal = window.prompt('累積タスク数を入力してね', '8');
-            if (newVal !== null) {
-                localStorage.setItem('totalTasksCompleted', newVal);
-                location.reload();
-            }
-        }
-    });
-}
-
-const calPrevEl = document.getElementById('cal-prev');
-if (calPrevEl) {
-    calPrevEl.addEventListener('click', () => {
-        currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
-        renderCalendar(currentCalendarDate);
-    });
-}
-
+// --- カレンダーのイベント設定（ここから） ---
 const calTitleEl = document.getElementById('cal-title');
 if (calTitleEl) {
     calTitleEl.addEventListener('click', (e) => {
@@ -491,21 +471,9 @@ if (calNextEl) {
     });
 }
 
-    // カレンダー初期化
-    renderCalendar(new Date());
-
-    const calTitleEl = document.getElementById('cal-title');
-if (calTitleEl) {
-    calTitleEl.addEventListener('click', (e) => {
-        if (e.detail === 3) {
-            const newVal = window.prompt('累積タスク数を入力してね', '8');
-            if (newVal !== null) {
-                localStorage.setItem('totalTasksCompleted', newVal);
-                location.reload();
-            }
-        }
-    });
-}
+// カレンダーを現在の表示月で初期化
+renderCalendar(currentCalendarDate || new Date());
+// --- カレンダーのイベント設定（ここまで） ---
 
 const calPrevEl = document.getElementById('cal-prev');
 if (calPrevEl) {
