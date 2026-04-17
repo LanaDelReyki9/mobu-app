@@ -156,3 +156,21 @@ pointer-events: auto; /* 暗転中は操作不能にする */
 #screen-task-select {
     background-color: #F4F9F6 !important;
 }
+
+/* ===============================================
+   STEP 3-A: タスクチップ用 CSS Variables
+   =============================================== */
+   :root {
+    --task-icon-size: 40px;
+    --task-font-size: 18px;
+    --task-chip-gap: 12px;
+    --task-chip-padding: 12px 16px;
+    --task-chip-radius: 12px;
+
+    /* カテゴリー別背景色 */
+    --chip-color-diet:      #f8f8ac;
+    --chip-color-lifestyle: #B9DCC6;
+    --chip-color-mental:    #F2C9DB;
+    --chip-color-shapeup:   #D0E0FB;
+    --chip-color-beauty:    #E6E6FA;
+}

@@ -9,6 +9,7 @@
     <!-- CSSファイルを読み込み -->
     <link rel="stylesheet" href="style-base.css">
     <link rel="stylesheet" href="style-screens.css">
+    <link href="https://fonts.googleapis.com/css2?family=Caveat&display=swap" rel="stylesheet">
 </head>
 
 <body>
@@ -204,31 +205,32 @@
 </div>
 
 <!-- B-1: ホーム画面 -->
-<div id="screen-home" class="screen">
-    <div class="container">
-        <p class="guide-text">今日完了したタスクにチェックを入れてください</p>
-        <div class="task-list">
-            <div class="task-chip-home">
-                <input type="checkbox" id="home-task1">
-                <label for="home-task1">タスク1</label>
-            </div>
-            <div class="task-chip-home">
-                <input type="checkbox" id="home-task2">
-                <label for="home-task2">タスク2</label>
-            </div>
-            <div class="task-chip-home">
-                <input type="checkbox" id="home-task3">
-                <label for="home-task3">タスク3</label>
-            </div>
-        </div>
-        <button class="btn-primary" disabled>完了</button>
-        <div id="task-limit-message" style="display:none; position:fixed; bottom:120px; left:50%; transform:translateX(-50%); background:rgba(255,255,255,0.95); border-radius:16px; padding:12px 20px; font-size:21px; text-align:center; box-shadow:0 4px 12px rgba(0,0,0,0.15); z-index:999; opacity:0; transition:opacity 0.4s;">頑張り屋な君はステキだよ🐻<br>でも1日3タスク位が長く続けるコツだよ⭐</div>
-        <div class="calendar-wrapper">
-            <div class="calendar-header">
-                <button class="cal-nav-btn" id="cal-prev">＜</button>
-                <span class="cal-title" id="cal-title"></span>
-                <button class="cal-nav-btn" id="cal-next">＞</button>
-            </div>
+<div class="task-list">
+    <div class="task-chip-home" id="chip-0">
+        <span class="chip-icon-wrap">
+            <span class="chip-icon-placeholder"></span>
+        </span>
+        <label for="home-task1" class="chip-label">タスク1</label>
+        <input type="checkbox" id="home-task1" class="chip-checkbox">
+        <span class="chip-clear-text">Clear!</span>
+    </div>
+    <div class="task-chip-home" id="chip-1">
+        <span class="chip-icon-wrap">
+            <span class="chip-icon-placeholder"></span>
+        </span>
+        <label for="home-task2" class="chip-label">タスク2</label>
+        <input type="checkbox" id="home-task2" class="chip-checkbox">
+        <span class="chip-clear-text">Clear!</span>
+    </div>
+    <div class="task-chip-home" id="chip-2">
+        <span class="chip-icon-wrap">
+            <span class="chip-icon-placeholder"></span>
+        </span>
+        <label for="home-task3" class="chip-label">タスク3</label>
+        <input type="checkbox" id="home-task3" class="chip-checkbox">
+        <span class="chip-clear-text">Clear!</span>
+    </div>
+</div>
             <div class="calendar-grid">
                 <div class="cal-day-label">日</div>
                 <div class="cal-day-label">月</div>

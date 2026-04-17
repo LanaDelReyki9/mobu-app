@@ -2,6 +2,90 @@
 // Main Logic (イベントリスナーの登録)
 // ===============================================
 
+// ===============================================
+// STEP 4-A: タスクID → カテゴリー背景色マップ
+// ===============================================
+const TASK_CATEGORY_MAP = {
+    'task-select-1':  'var(--chip-color-diet)',
+    'task-select-2':  'var(--chip-color-diet)',
+    'task-select-3':  'var(--chip-color-diet)',
+    'task-select-4':  'var(--chip-color-lifestyle)',
+    'task-select-5':  'var(--chip-color-lifestyle)',
+    'task-select-6':  'var(--chip-color-mental)',
+    'task-select-7':  'var(--chip-color-shapeup)',
+    'task-select-8':  'var(--chip-color-shapeup)',
+    'task-select-9':  'var(--chip-color-shapeup)',
+    'task-select-10': 'var(--chip-color-beauty)',
+    'task-select-11': 'var(--chip-color-beauty)',
+    'task-select-12': 'var(--chip-color-mental)',
+};
+
+// ===============================================
+// STEP 4-B: お花SVGを生成する関数
+// ===============================================
+function createFlowerSVG() {
+    const ns = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('viewBox', '0 0 40 40');
+    svg.setAttribute('width', '40');
+    svg.setAttribute('height', '40');
+
+    // 茎（チェックマーク形）
+    const check = document.createElementNS(ns, 'polyline');
+    check.setAttribute('points', '8,22 16,30 32,12');
+    check.setAttribute('stroke', '#7caf7c');
+    check.setAttribute('stroke-width', '3');
+    check.setAttribute('fill', 'none');
+    check.setAttribute('stroke-linecap', 'round');
+    check.setAttribute('stroke-linejoin', 'round');
+    svg.appendChild(check);
+
+    // 花びら×5
+    const petalAngles = [0, 72, 144, 216, 288];
+    petalAngles.forEach(angle => {
+        const ellipse = document.createElementNS(ns, 'ellipse');
+        ellipse.setAttribute('cx', '20');
+        ellipse.setAttribute('cy', '14');
+        ellipse.setAttribute('rx', '4');
+        ellipse.setAttribute('ry', '7');
+        ellipse.setAttribute('fill', '#ffb7c5');
+        ellipse.setAttribute('opacity', '0.85');
+        ellipse.setAttribute('transform', `rotate(${angle} 20 20)`);
+        svg.appendChild(ellipse);
+    });
+
+    // 花の中心
+    const center = document.createElementNS(ns, 'circle');
+    center.setAttribute('cx', '20');
+    center.setAttribute('cy', '20');
+    center.setAttribute('r', '5');
+    center.setAttribute('fill', '#ffe066');
+    svg.appendChild(center);
+
+    return svg;
+}
+
+// ===============================================
+// STEP 4-B: チップを完了状態にする関数
+// ===============================================
+function completeChip(chipEl) {
+    if (chipEl.classList.contains('completed')) return;
+
+    chipEl.classList.add('completed');
+
+    // アイコンをお花に差し替え
+    const iconWrap = chipEl.querySelector('.chip-icon-wrap');
+    iconWrap.innerHTML = '';
+    iconWrap.appendChild(createFlowerSVG());
+
+    // Clear! を表示してフェードアウト
+    const clearText = chipEl.querySelector('.chip-clear-text');
+    clearText.classList.add('show');
+    setTimeout(() => {
+        clearText.classList.remove('show');
+    }, 2000);
+}
+
 // DOMが読み込まれたらアプリを初期化
 document.addEventListener('DOMContentLoaded', function() {
     generateUserId(); //
@@ -160,7 +244,6 @@ showSplashScreen();
         }
     }
 
-    // B-1: ホーム画面
    // B-1: ホーム画面
 const homeScreen = document.getElementById('screen-home');
 if (homeScreen) {
