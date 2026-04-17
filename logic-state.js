@@ -202,10 +202,15 @@ function getAchievementLog() {
 
 function getGameDate() {
     const now = new Date();
-    if (now.getHours() < 4) {
-        now.setDate(now.getDate() - 1);
+    const gameNow = new Date(now.getTime());
+    if (gameNow.getHours() < 4) {
+        gameNow.setDate(gameNow.getDate() - 1);
     }
-    return now.toISOString().split('T')[0];
+
+    const y = gameNow.getFullYear();
+    const m = String(gameNow.getMonth() + 1).padStart(2, '0');
+    const d = String(gameNow.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
 }
 
 // ===============================================

@@ -205,67 +205,61 @@
 </div>
 
 <!-- B-1: ホーム画面 -->
-<div class="task-list">
-    <div class="task-chip-home" id="chip-0">
-        <span class="chip-icon-wrap">
-            <span class="chip-icon-placeholder"></span>
-        </span>
-        <label for="home-task1" class="chip-label">タスク1</label>
-        <input type="checkbox" id="home-task1" class="chip-checkbox">
-        <span class="chip-clear-text">Clear!</span>
+<div id="screen-home" class="screen">
+    <div class="task-list">
+        <div class="task-chip-home" id="chip-0">
+            <span class="chip-icon-wrap">
+                <span class="chip-icon-placeholder"></span>
+            </span>
+            <label for="home-task1" class="chip-label">タスク1</label>
+            <input type="checkbox" id="home-task1" class="chip-checkbox">
+            <span class="chip-clear-text">Clear!</span>
+        </div>
+        <div class="task-chip-home" id="chip-1">
+            <span class="chip-icon-wrap">
+                <span class="chip-icon-placeholder"></span>
+            </span>
+            <label for="home-task2" class="chip-label">タスク2</label>
+            <input type="checkbox" id="home-task2" class="chip-checkbox">
+            <span class="chip-clear-text">Clear!</span>
+        </div>
+        <div class="task-chip-home" id="chip-2">
+            <span class="chip-icon-wrap">
+                <span class="chip-icon-placeholder"></span>
+            </span>
+            <label for="home-task3" class="chip-label">タスク3</label>
+            <input type="checkbox" id="home-task3" class="chip-checkbox">
+            <span class="chip-clear-text">Clear!</span>
+        </div>
     </div>
-    <div class="task-chip-home" id="chip-1">
-        <span class="chip-icon-wrap">
-            <span class="chip-icon-placeholder"></span>
-        </span>
-        <label for="home-task2" class="chip-label">タスク2</label>
-        <input type="checkbox" id="home-task2" class="chip-checkbox">
-        <span class="chip-clear-text">Clear!</span>
-    </div>
-    <div class="task-chip-home" id="chip-2">
-        <span class="chip-icon-wrap">
-            <span class="chip-icon-placeholder"></span>
-        </span>
-        <label for="home-task3" class="chip-label">タスク3</label>
-        <input type="checkbox" id="home-task3" class="chip-checkbox">
-        <span class="chip-clear-text">Clear!</span>
-    </div>
-</div>
-            <div class="calendar-grid">
-                <div class="cal-day-label">日</div>
-                <div class="cal-day-label">月</div>
-                <div class="cal-day-label">火</div>
-                <div class="cal-day-label">水</div>
-                <div class="cal-day-label">木</div>
-                <div class="cal-day-label">金</div>
-                <div class="cal-day-label">土</div>
-            </div>
-            <div class="calendar-days" id="calendar-days"></div>
+
+    <button class="btn-primary" disabled>完了する</button>
+
+    <div class="calendar-wrapper">
+        <div class="calendar-header">
+            <button id="cal-prev" class="cal-nav-btn" type="button">＜</button>
+            <div id="cal-title" class="cal-title"></div>
+            <button id="cal-next" class="cal-nav-btn" type="button">＞</button>
         </div>
 
-        <!-- ★★★ 修正: アイコンのパスを正しいものに ★★★ -->
-        <div class="home-nav">
-            <img src="assets/icon_profile_24.svg" alt="プロフィール" id="nav-profile-icon">
-            <img src="assets/icon_settings_24.svg" alt="設定" id="nav-settings-icon">
+        <div class="calendar-grid">
+            <div class="cal-day-label">日</div>
+            <div class="cal-day-label">月</div>
+            <div class="cal-day-label">火</div>
+            <div class="cal-day-label">水</div>
+            <div class="cal-day-label">木</div>
+            <div class="cal-day-label">金</div>
+            <div class="cal-day-label">土</div>
         </div>
+        <div class="calendar-days" id="calendar-days"></div>
+    </div>
+
+    <div class="home-nav">
+        <img src="assets/icon_profile_24.svg" alt="プロフィール" id="nav-profile-icon">
+        <img src="assets/icon_settings_24.svg" alt="設定" id="nav-settings-icon">
     </div>
 </div>
-<!-- B-2: タスク報告画面（画像実装版） -->
-<div id="screen-report" class="screen screen-full">
-    <img src="assets/bg_report.svg" alt="背景" class="bg-full">
-    <div class="thought-bubble-container">
-        <p id="report-thought-text" class="thought-text">よし、完了！モブ君に報告しよっと♪</p>
-        <div id="report-selection-area" style="display: none;"></div>
-    </div>
-</div>
-<!-- C-1: カフェ画面 -->
-<div id="screen-cafe" class="screen screen-full">
-    <!-- ★変更: グレーの箱をimgタグに置き換え -->
-    <img id="cafe-background-image" src="" alt="カフェの背景" class="bg-full">
-    <div class="dialogue-container">
-        <p class="dialogue-text">（モブ君のセリフがここに表示されます）</p>
-    </div>
-</div>
+
 <!-- C-2: LINE画面 -->
 <div id="screen-line" class="screen">
     <div class="line-container">

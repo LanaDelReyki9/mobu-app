@@ -275,90 +275,108 @@ showSplashScreen();
     }
 
    // B-1: ホーム画面
-const homeScreen = document.getElementById('screen-home');
-if (homeScreen) {
-    const homeChips = homeScreen.querySelectorAll('.task-chip-home');
-    const homeCompleteButton = homeScreen.querySelector('.btn-primary');
-    const profileIcon = document.getElementById('nav-profile-icon');
-    const settingsIcon = document.getElementById('nav-settings-icon');
-
-    // チップをタップしたらチェック状態をトグル（完了済みは無視）
-    homeChips.forEach((chip) => {
-        chip.addEventListener('click', function() {
-            if (this.classList.contains('completed')) return;
-            const checkbox = this.querySelector('.chip-checkbox');
-            checkbox.checked = !checkbox.checked;
-
-            // 完了ボタンの活性制御
-            const checkedCount = homeScreen.querySelectorAll('.chip-checkbox:checked').length;
-            homeCompleteButton.disabled = (checkedCount === 0);
-        });
-    });
-
-    // 完了ボタン
-    homeCompleteButton.addEventListener('click', function() {
-        if (this.disabled) return;
-        updateLastLoginDate();
-
-        // 今日の上限チェック（getGameDate基準）
-        const today = getGameDate();
-        const log = getAchievementLog();
-        if ((log[today] || 0) >= 3) return;
-
-        const completedTasks = [];
-        const completedIndices = [];
-
-        homeChips.forEach((chip, index) => {
-            const checkbox = chip.querySelector('.chip-checkbox');
-            if (checkbox.checked) {
-                completedTasks.push(chip.querySelector('.chip-label').textContent);
-                completedIndices.push(index);
-            }
-        });
-
-        // お花演出
-        completedIndices.forEach(i => completeChip(homeChips[i]));
-
-        // データ保存
-        const currentTotal = getTotalTasksCompleted();
-        setPreviousTotalTasks(currentTotal);
-        addTasksCompleted(completedTasks.length);
-        recordTodayAchievement(completedTasks.length);
-
-        // 既存の完了済みインデックスとマージして保存
-        const existing = getCompletedToday();
-        const existingIndices = existing ? existing.taskIndices : [];
-        const mergedIndices = [...new Set([...existingIndices, ...completedIndices])];
-        saveCompletedToday(mergedIndices);
-
-        renderCalendar(currentCalendarDate);
-        homeCompleteButton.disabled = true;
-
-        // 画面遷移
-        if (currentTotal === 0) {
-            localStorage.setItem('isFirstReport', 'true');
-            localStorage.setItem('tempCompletedTasks', JSON.stringify(completedTasks));
-            playBlinkVideo(() => { showScreen('screen-cafe'); });
-        } else {
-            playBlinkVideo(() => { setupReportScreen(completedTasks); });
-        }
-    });
-
-    if (profileIcon) {
-        profileIcon.addEventListener('click', function() {
-            updateLastLoginDate();
-            showProfileScreen();
-            playProfileRewardAnimationIfNeeded();
-        });
-    }
-
-    if (settingsIcon) {
-        settingsIcon.addEventListener('click', function() {
-            updateLastLoginDate();
-            showSettingsScreen();
-        });
-    }
-}
+   const homeScreen = document.getElementById('screen-home');
+   if (homeScreen) {
+       const homeChips = homeScreen.querySelectorAll('.task-chip-home');
+       const homeCompleteButton = homeScreen.querySelector('.btn-primary');
+       const profileIcon = document.getElementById('nav-profile-icon');
+       const settingsIcon = document.getElementById('nav-settings-icon');
+   
+       // ★追加: 二重押し防止フラグ
+       let isCompleting = false;
+   
+       // チップをタップしたらチェック状態をトグル（完了済みは無視）
+       homeChips.forEach((chip) => {
+           chip.addEventListener('click', function() {
+               if (this.classList.contains('completed')) return;
+               const checkbox = this.querySelector('.chip-checkbox');
+               checkbox.checked = !checkbox.checked;
+   
+               // 完了ボタンの活性制御（二重押し中も無効化するように強化）
+               const checkedCount = homeScreen.querySelectorAll('.chip-checkbox:checked').length;
+               homeCompleteButton.disabled = (checkedCount === 0 || isCompleting);
+           });
+       });
+   
+       // 完了ボタン
+       homeCompleteButton.addEventListener('click', function() {
+           // ★修正: 二重実行のガード
+           if (this.disabled || isCompleting) return;
+           isCompleting = true;
+           this.disabled = true;
+   
+           try {
+               updateLastLoginDate();
+   
+               // 今日の上限チェック（getGameDate基準）
+               const today = getGameDate();
+               const log = getAchievementLog();
+               if ((log[today] || 0) >= 3) {
+                   console.log("今日の上限に達しています");
+                   return;
+               }
+   
+               const completedTasks = [];
+               const completedIndices = [];
+   
+               homeChips.forEach((chip, index) => {
+                   const checkbox = chip.querySelector('.chip-checkbox');
+                   if (checkbox.checked) {
+                       completedTasks.push(chip.querySelector('.chip-label').textContent);
+                       completedIndices.push(index);
+                   }
+               });
+   
+               // お花演出
+               completedIndices.forEach(i => completeChip(homeChips[i]));
+   
+               // データ保存
+               const currentTotal = getTotalTasksCompleted();
+               setPreviousTotalTasks(currentTotal);
+               addTasksCompleted(completedTasks.length);
+               recordTodayAchievement(completedTasks.length);
+   
+               // 既存の完了済みインデックスとマージして保存
+               const existing = getCompletedToday();
+               const existingIndices = existing ? existing.taskIndices : [];
+               const mergedIndices = [...new Set([...existingIndices, ...completedIndices])];
+               saveCompletedToday(mergedIndices);
+   
+               renderCalendar(currentCalendarDate);
+               
+               // 画面遷移
+               if (currentTotal === 0) {
+                   localStorage.setItem('isFirstReport', 'true');
+                   localStorage.setItem('tempCompletedTasks', JSON.stringify(completedTasks));
+                   playBlinkVideo(() => { showScreen('screen-cafe'); });
+               } else {
+                   playBlinkVideo(() => { setupReportScreen(completedTasks); });
+               }
+   
+           } catch (error) {
+               console.error("完了処理中にエラーが発生しました:", error);
+               // エラー時はボタンを再度押せるように戻す
+               isCompleting = false;
+               const checkedCount = homeScreen.querySelectorAll('.chip-checkbox:checked').length;
+               homeCompleteButton.disabled = (checkedCount === 0);
+           }
+       });
+   
+       if (profileIcon) {
+           profileIcon.addEventListener('click', function() {
+               updateLastLoginDate();
+               showProfileScreen();
+               playProfileRewardAnimationIfNeeded();
+           });
+       }
+   
+       if (settingsIcon) {
+           settingsIcon.addEventListener('click', function() {
+               updateLastLoginDate();
+               showSettingsScreen();
+           });
+       }
+   }
 
     // C-2: LINE画面
     const lineBackIcon = document.querySelector('#screen-line .line-header img');
@@ -423,7 +441,9 @@ if (homeScreen) {
         });
     }
 
-    document.getElementById('cal-title').addEventListener('click', (e) => {
+    const calTitleEl = document.getElementById('cal-title');
+if (calTitleEl) {
+    calTitleEl.addEventListener('click', (e) => {
         if (e.detail === 3) {
             const newVal = window.prompt('累積タスク数を入力してね', '8');
             if (newVal !== null) {
@@ -432,19 +452,68 @@ if (homeScreen) {
             }
         }
     });
+}
+
+const calPrevEl = document.getElementById('cal-prev');
+if (calPrevEl) {
+    calPrevEl.addEventListener('click', () => {
+        currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
+        renderCalendar(currentCalendarDate);
+    });
+}
+
+const calTitleEl = document.getElementById('cal-title');
+if (calTitleEl) {
+    calTitleEl.addEventListener('click', (e) => {
+        if (e.detail === 3) {
+            const newVal = window.prompt('累積タスク数を入力してね', '8');
+            if (newVal !== null) {
+                localStorage.setItem('totalTasksCompleted', newVal);
+                location.reload();
+            }
+        }
+    });
+}
+
+const calPrevEl = document.getElementById('cal-prev');
+if (calPrevEl) {
+    calPrevEl.addEventListener('click', () => {
+        currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
+        renderCalendar(currentCalendarDate);
+    });
+}
+
+const calNextEl = document.getElementById('cal-next');
+if (calNextEl) {
+    calNextEl.addEventListener('click', () => {
+        currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
+        renderCalendar(currentCalendarDate);
+    });
+}
 
     // カレンダー初期化
     renderCalendar(new Date());
 
-    document.getElementById('cal-prev').addEventListener('click', () => {
+    const calTitleEl = document.getElementById('cal-title');
+if (calTitleEl) {
+    calTitleEl.addEventListener('click', (e) => {
+        if (e.detail === 3) {
+            const newVal = window.prompt('累積タスク数を入力してね', '8');
+            if (newVal !== null) {
+                localStorage.setItem('totalTasksCompleted', newVal);
+                location.reload();
+            }
+        }
+    });
+}
+
+const calPrevEl = document.getElementById('cal-prev');
+if (calPrevEl) {
+    calPrevEl.addEventListener('click', () => {
         currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
         renderCalendar(currentCalendarDate);
     });
-
-    document.getElementById('cal-next').addEventListener('click', () => {
-        currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
-        renderCalendar(currentCalendarDate);
-    });
+}
 });
 
 
