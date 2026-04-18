@@ -454,12 +454,12 @@ if (calTitleEl) {
             const newVal = window.prompt('累積タスク数を入力してね', '8');
             if (newVal !== null) {
                 localStorage.setItem('totalTasksCompleted', newVal);
+                const today = getGameDate();
+                const log = getAchievementLog();
+                delete log[today];
+                localStorage.setItem('achievementLog', JSON.stringify(log));
+                location.reload();
             }
-            const today = getGameDate();
-            const log = getAchievementLog();
-            delete log[today];
-            localStorage.setItem('achievementLog', JSON.stringify(log));
-            location.reload();
         }
     });
 }
