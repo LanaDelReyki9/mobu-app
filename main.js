@@ -301,7 +301,7 @@ showSplashScreen();
                const checkedCount = homeScreen.querySelectorAll('.chip-checkbox:checked').length;
                homeCompleteButton.disabled = (checkedCount === 0 || isCompleting);
            });
-   
+        });
        // 完了ボタン
        homeCompleteButton.addEventListener('click', function() {
            // ★修正: 二重実行のガード
