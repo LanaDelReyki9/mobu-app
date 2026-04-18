@@ -292,6 +292,17 @@ showSplashScreen();
        // チップをタップしたらチェック状態をトグル（完了済みは無視）
        homeChips.forEach((chip) => {
            chip.addEventListener('click', function() {
+            
+            homeChips.forEach((chip) => {
+                chip.addEventListener('click', function() {
+                    console.log('チップがクリックされました'); // ★追加
+                    if (this.classList.contains('completed')) return;
+                    const checkbox = this.querySelector('.chip-checkbox');
+                    checkbox.checked = !checkbox.checked;
+                    const checkedCount = homeScreen.querySelectorAll('.chip-checkbox:checked').length;
+                    homeCompleteButton.disabled = (checkedCount === 0 || isCompleting);
+                });
+            });
                if (this.classList.contains('completed')) return;
                const checkbox = this.querySelector('.chip-checkbox');
                checkbox.checked = !checkbox.checked;
