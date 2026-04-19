@@ -185,7 +185,8 @@ showSplashScreen();
                     updateHomeTasks();
                     showScreen('screen-home');
                 } else {
-                    showScreen('screen-cafe');
+                    updateHomeTasks();
+    showScreen('screen-home');
                 }
             } else {
                 showScreen('screen-name');
