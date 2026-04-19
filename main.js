@@ -568,6 +568,7 @@ async function initializeNotificationFeatures() {
         document.addEventListener('DOMContentLoaded', async function() {
         setupForegroundMessageHandler();
         await requestNotificationPermission();
+        });
     } catch (error) {
         console.error('初期化エラー:', error);
     }
