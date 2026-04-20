@@ -131,11 +131,11 @@ function completeChip(chipEl) {
     iconWrap.appendChild(createFlowerSVG());
 
     // Clear! を表示してフェードアウト
-    const clearText = chipEl.querySelector('.chip-clear-text');
-    clearText.classList.add('show');
-    setTimeout(() => {
-        clearText.classList.remove('show');
-    }, 2000);
+    // const clearText = chipEl.querySelector('.chip-clear-text');
+// clearText.classList.add('show');
+// setTimeout(() => {
+//     clearText.classList.remove('show');
+// }, 2000);
 }
 
 // DOMが読み込まれたらアプリを初期化
@@ -324,7 +324,13 @@ showSplashScreen();
                if (this.classList.contains('completed')) return;
                const checkbox = this.querySelector('.chip-checkbox');
                checkbox.checked = !checkbox.checked;
-   
+   if (checkbox.checked) {
+    completeChip(this);
+} else {
+    this.classList.remove('completed');
+    const iconWrap = this.querySelector('.chip-icon-wrap');
+    iconWrap.innerHTML = '<span class="chip-icon-placeholder"></span>';
+}
                // 完了ボタンの活性制御（二重押し中も無効化するように強化）
                const checkedCount = homeScreen.querySelectorAll('.chip-checkbox:checked').length;
                homeCompleteButton.disabled = (checkedCount === 0 || isCompleting);
