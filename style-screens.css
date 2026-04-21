@@ -137,6 +137,13 @@ margin-bottom: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
+    transition: width 0.3s ease, opacity 0.3s ease;
+}
+
+.task-chip-home.checked .chip-icon-wrap {
+    width: 0;
+    opacity: 0;
 }
 
 .chip-icon-placeholder {
