@@ -1,7 +1,8 @@
 // ===============================================
 // Main Logic (イベントリスナーの登録)
 // ===============================================
-
+// ★追加: 二重押し防止フラグ
+let isCompleting = false;
 // ===============================================
 // STEP 4-A: タスクID → カテゴリー背景色マップ
 // ===============================================
@@ -34,6 +35,7 @@ const TASK_CATEGORY_MAP = {
     'task-select-12': 'var(--chip-color-mental)',
 };
 function updateHomeTasks() {
+    isCompleting = false;
     const storedTasks = localStorage.getItem('selectedTasks');
     const storedIds   = JSON.parse(localStorage.getItem('selectedTaskIds') || '[]');
     if (!storedTasks) return;
@@ -313,8 +315,6 @@ showSplashScreen();
        const profileIcon = document.getElementById('nav-profile-icon');
        const settingsIcon = document.getElementById('nav-settings-icon');
    
-       // ★追加: 二重押し防止フラグ
-       let isCompleting = false;
    
        // チップをタップしたらチェック状態をトグル（完了済みは無視）
        homeChips.forEach((chip) => {
