@@ -877,7 +877,6 @@ object-fit: contain; / 待機中のクマは、見切れないように「収め
     max-width: 500px;
     margin: 0 auto 0 auto;
     z-index: 10;
-    padding: 12px;
     background-color: rgba(240, 240, 240, 0.9);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
@@ -889,8 +888,7 @@ object-fit: contain; / 待機中のクマは、見切れないように「収め
     max-height: 0;
     opacity: 0;
     overflow: hidden;
-    padding-top: 0;
-    padding-bottom: 0;
+    padding: 0;
     margin-bottom: 0;
     transition:
         max-height 0.4s cubic-bezier(0.25, 1, 0.5, 1),
@@ -904,11 +902,6 @@ object-fit: contain; / 待機中のクマは、見切れないように「収め
     opacity: 1;
     padding: 12px;
     margin-bottom: 12px;
-}
-.notification-content {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
 }
 
 .icon-container {
