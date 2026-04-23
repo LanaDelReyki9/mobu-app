@@ -983,3 +983,8 @@ object-fit: contain; / 待機中のクマは、見切れないように「収め
     top: 0;
     left: 0;
 }
+
+.chip-icon-home {
+    width: 80px;
+    height: 80px;
+}

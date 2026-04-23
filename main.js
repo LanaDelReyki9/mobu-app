@@ -66,7 +66,7 @@ chip.classList.add('checked');
             if (iconPath) {
                 const img = document.createElement('img');
                 img.src = iconPath;
-                img.className = 'chip-icon';
+                img.className = 'chip-icon-home';
                 img.alt = '';
                 iconWrap.appendChild(img);
             }
