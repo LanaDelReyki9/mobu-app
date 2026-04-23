@@ -559,7 +559,6 @@ if (iineLog.date !== today) {
 if (iineLog.count >= 3) return;
 
 // 30分以内の再起動なら終了
-if (now - iineLog.lastTime < 30 * 60 * 1000) return;
 const iineKey = 'iine_display_log';
 const now = Date.now();
 const today = new Date().toISOString().split('T')[0];
@@ -572,7 +571,6 @@ if (iineLog.date !== today) {
 if (iineLog.count >= 3) return;
 
 if (now - iineLog.lastTime < 30 * 60 * 1000) return;
-    const mobuState = getMobuState();
 
     if (mobuState !== 'normal') {
         const dialogues = oneeNotificationDialogues[mobuState];
