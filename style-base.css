@@ -161,7 +161,7 @@ pointer-events: auto; /* 暗転中は操作不能にする */
    STEP 3-A: タスクチップ用 CSS Variables
    =============================================== */
    :root {
-    --task-icon-size: 40px;
+    --task-icon-size: 50px;
     --task-font-size: 18px;
     --task-chip-gap: 12px;
     --task-chip-padding: 12px 16px;
