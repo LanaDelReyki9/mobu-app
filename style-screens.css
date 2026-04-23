@@ -899,10 +899,10 @@ object-fit: contain; / 待機中のクマは、見切れないように「収め
 .fake-notification.show {
     max-height: 120px;
     opacity: 1;
-    padding-top: 12px;
-    padding-bottom: 12px;
+    padding: 12px;
     margin-bottom: 12px;
 }
+
 .notification-content {
     display: flex;
     align-items: center;
