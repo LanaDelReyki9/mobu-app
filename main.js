@@ -544,12 +544,43 @@ function handleOSNotificationClick(notificationType, message) {
  * アプリ起動時の通知表示を管理する（通常起動時のみ）
  */
 function handleAppLaunchNotification() {
+    // 1日3回・30分インターバルの制限チェック
+const iineKey = 'iine_display_log';
+const now = Date.now();
+const today = new Date().toISOString().split('T')[0];
+let iineLog = JSON.parse(localStorage.getItem(iineKey) || '{"date":"","count":0,"lastTime":0}');
+
+// 日付が変わっていたらリセット
+if (iineLog.date !== today) {
+    iineLog = { date: today, count: 0, lastTime: 0 };
+}
+
+// 3回以上表示済みなら終了
+if (iineLog.count >= 3) return;
+
+// 30分以内の再起動なら終了
+if (now - iineLog.lastTime < 30 * 60 * 1000) return;
+const iineKey = 'iine_display_log';
+const now = Date.now();
+const today = new Date().toISOString().split('T')[0];
+let iineLog = JSON.parse(localStorage.getItem(iineKey) || '{"date":"","count":0,"lastTime":0}');
+
+if (iineLog.date !== today) {
+    iineLog = { date: today, count: 0, lastTime: 0 };
+}
+
+if (iineLog.count >= 3) return;
+
+if (now - iineLog.lastTime < 30 * 60 * 1000) return;
     const mobuState = getMobuState();
 
     if (mobuState !== 'normal') {
         const dialogues = oneeNotificationDialogues[mobuState];
         if (!dialogues || dialogues.length === 0) return;
         const message = dialogues[Math.floor(Math.random() * dialogues.length)];
+        iineLog.count += 1;
+iineLog.lastTime = now;
+localStorage.setItem(iineKey, JSON.stringify(iineLog));
         showFakeNotification('モブ君', message, 'assets/images/mobu_icon_v1.png', 'onee');
     } else {
         const storedTaskIds = JSON.parse(localStorage.getItem('selectedTaskIds') || '[]');
@@ -587,7 +618,9 @@ function handleAppLaunchNotification() {
         // タイムスタンプをセット
         const timestampEl = document.getElementById('notification-timestamp');
         if (timestampEl) timestampEl.textContent = chosen.time;
-
+iineLog.count += 1;
+iineLog.lastTime = now;
+localStorage.setItem(iineKey, JSON.stringify(iineLog));
         showFakeNotification('モブ君', message, 'assets/images/mobu_icon_v1.png', 'periodic');
     }
 }
