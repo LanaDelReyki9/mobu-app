@@ -167,10 +167,6 @@ document.addEventListener('DOMContentLoaded', function() {
             // 処理後にハッシュをクリアしてリロードによる再実行を防ぐ
             history.replaceState(null, null, ' ');
         }
-    } else {
-        // 通常起動時（通知クリック以外）の場合のみ、フェイク通知を表示
-        handleAppLaunchNotification();
-    }
     // ★★★ ここまでが最後の仕上げ ★★★
     
     generateUserId();
@@ -544,27 +540,29 @@ function handleOSNotificationClick(notificationType, message) {
  * アプリ起動時の通知表示を管理する（通常起動時のみ）
  */
 function handleAppLaunchNotification() {
-    // 1日3回・30分インターバルの制限チェック
-const iineKey = 'iine_display_log';
-const now = Date.now();
-const today = new Date().toISOString().split('T')[0];
-let iineLog = JSON.parse(localStorage.getItem(iineKey) || '{"date":"","count":0,"lastTime":0}');
+    if (document.visibilityState !== 'visible') return;
 
-// 日付が変わっていたらリセット
-if (iineLog.date !== today) {
-    iineLog = { date: today, count: 0, lastTime: 0 };
-}
+    const iineKey = 'iine_display_log';
+    const now = Date.now();
+    const today = new Date().toISOString().split('T')[0];
+    let iineLog = JSON.parse(localStorage.getItem(iineKey) || '{"date":"","count":0,"lastTime":0}');
 
-// 3回以上表示済みなら終了
-if (iineLog.count >= 3) return;
-const mobuState = getMobuState();
+    if (iineLog.date !== today) {
+        iineLog = { date: today, count: 0, lastTime: 0 };
+    }
+
+    if (now - iineLog.lastTime < 30 * 60 * 1000) return;
+    if (iineLog.count >= 3) return;
+
+    const mobuState = getMobuState();
+
     if (mobuState !== 'normal') {
         const dialogues = oneeNotificationDialogues[mobuState];
         if (!dialogues || dialogues.length === 0) return;
         const message = dialogues[Math.floor(Math.random() * dialogues.length)];
         iineLog.count += 1;
-iineLog.lastTime = now;
-localStorage.setItem(iineKey, JSON.stringify(iineLog));
+        iineLog.lastTime = now;
+        localStorage.setItem(iineKey, JSON.stringify(iineLog));
         showFakeNotification('モブ君', message, 'assets/images/mobu_icon_v1.png', 'onee');
     } else {
         const storedTaskIds = JSON.parse(localStorage.getItem('selectedTaskIds') || '[]');
@@ -572,13 +570,11 @@ localStorage.setItem(iineKey, JSON.stringify(iineLog));
 
         const nickname = localStorage.getItem('nickname') || 'あなた';
 
-        // 選択中タスクに対応するセリフだけに絞る
         const candidates = periodicNotificationDialogues.filter(d =>
             storedTaskIds.includes(d.taskId)
         );
         if (candidates.length === 0) return;
 
-        // 表示済み管理
         const seenKey = 'iine_seen_indices';
         let seen = JSON.parse(localStorage.getItem(seenKey) || '[]');
         const candidateIndices = candidates.map(d => periodicNotificationDialogues.indexOf(d));
@@ -599,12 +595,12 @@ localStorage.setItem(iineKey, JSON.stringify(iineLog));
         const chosen = periodicNotificationDialogues[chosenIndex];
         const message = chosen.text.replace(/\$\{nickname\}/g, nickname);
 
-        // タイムスタンプをセット
         const timestampEl = document.getElementById('notification-timestamp');
         if (timestampEl) timestampEl.textContent = chosen.time;
-iineLog.count += 1;
-iineLog.lastTime = now;
-localStorage.setItem(iineKey, JSON.stringify(iineLog));
+
+        iineLog.count += 1;
+        iineLog.lastTime = now;
+        localStorage.setItem(iineKey, JSON.stringify(iineLog));
         showFakeNotification('モブ君', message, 'assets/images/mobu_icon_v1.png', 'periodic');
     }
 }
@@ -696,6 +692,7 @@ async function requestNotificationPermission() {
 
     }, 1000);
 }
+document.addEventListener('visibilitychange', handleAppLaunchNotification);
 let currentCalendarDate = new Date();
 
 function renderCalendar(date) {
