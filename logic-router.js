@@ -1063,6 +1063,7 @@ function showFakeNotification(sender, message, iconSrc, notificationType) {
         }));
 
         // 瞬き演出を挟んでLINE画面へ遷移
+        replacedBanner.classList.remove('show');
         playBlinkVideo(() => {
             showScreen('screen-line');
         });
