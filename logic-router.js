@@ -1074,14 +1074,242 @@ function showFakeNotification(sender, message, iconSrc, notificationType) {
  * 現在の時刻に基づいて 'morning', 'afternoon', 'night' のいずれかの時間帯を返す
  * @returns {('morning'|'afternoon'|'night')}
  */
+// ===============================================
+// メッセージ表示：スロット管理・6時間ロック
+// ===============================================
+
+function getMessageDisplayLog() {
+    return JSON.parse(localStorage.getItem('messageDisplayLog') || '{}');
+}
+
+function saveMessageDisplayLog(log) {
+    localStorage.setItem('messageDisplayLog', JSON.stringify(log));
+}
+
+// 現在のスロットで今日すでに表示済みかチェック
+function hasShownInCurrentSlot() {
+    const log = getMessageDisplayLog();
+    const slot = getCurrentTimeOfDay();
+    const today = getGameDate();
+
+    // 夜の6時間ロックチェック
+    if (log.nightLockUntil && Date.now() < log.nightLockUntil) {
+        return true;
+    }
+
+    return log.date === today && log.slot === slot;
+}
+
+// 現在のスロットを表示済みとして記録
+function markSlotAsShown() {
+    const log = getMessageDisplayLog();
+    const slot = getCurrentTimeOfDay();
+    const today = getGameDate();
+
+    log.date = today;
+    log.slot = slot;
+
+    // 夜スロットなら6時間ロックを設定
+    if (slot === 'night') {
+        log.nightLockUntil = Date.now() + 6 * 60 * 60 * 1000;
+    }
+
+    saveMessageDisplayLog(log);
+}
+// ===============================================
+// メッセージ表示：CSVセリフデータ
+// ===============================================
+
+const SLOT_DIALOGUES = [
+    // ① 白湯 task-select-1
+    { taskId: 'task-select-1', type: 'all', text: '白湯、ちゃんと飲んでます？身体のためにも水分補給していきましょうね。' },
+    { taskId: 'task-select-1', type: 'all', text: '白湯ってSNS映えするような華やかさは無いですけど、地味だから続けやすいですよね。' },
+    { taskId: 'task-select-1', type: 'morning', text: '俺も今、白湯飲みながらメッセージ打ってます。……ちょっと一緒に頑張ってる気がしますね。' },
+    { taskId: 'task-select-1', type: 'afternoon', text: '朝、白湯飲むの忘れても、お昼休みに温かいもの飲むとホッとしますね。胃が温まると午後も動けそうな気がして。○○もお昼、ちゃんとホッとできる時間とれてますか？' },
+    { taskId: 'task-select-1', type: 'night', text: '明日の朝、寝起きに白湯を飲もうと思って今から準備してます。俺は朝が苦手なので…ちょっとオシャレなやかん買って気合い入れました！' },
+    { taskId: 'task-select-1', type: 'all', text: '飲み忘れたら今でも遅くないですよ。体がぽかぽかしてくるの、気持ちいいですよね。' },
+    { taskId: 'task-select-1', type: 'all', text: '白湯、飲みました？　体の中から少しずつ目を覚ましましょうね。' },
+
+    // ② フルーツ task-select-3
+    { taskId: 'task-select-3', type: 'morning', text: '朝のフルーツ、何入れてます？朝ごはんにフルーツがあるだけでちょっと嬉しいですよね' },
+    { taskId: 'task-select-3', type: 'afternoon', text: '今日の朝、奮発してフルーツ食べたんですけど、なんだか午前中ずっと機嫌よくいられた気がします。やっぱり甘いものって大事ですね。' },
+    { taskId: 'task-select-3', type: 'night', text: '明日の朝用に、さっきフルーツを買ってきました。これがあると思うと、明日起きるのがちょっとだけ楽しみになります。○○は明日、朝ごはん食べられそうですか？' },
+    { taskId: 'task-select-3', type: 'all', text: '朝に好きなフルーツがあるだけで、起きるのがちょっと楽しみになりません？' },
+    { taskId: 'task-select-3', type: 'all', text: '切ったり、洗ったりさえ面倒な時ありません？俺は今日カットフルーツにしました。' },
+    { taskId: 'task-select-3', type: 'all', text: '最近はフルーツがあるから、という理由で朝が好きになってきました。○○はどうですか？' },
+
+    // ③ スキンケア（朝）task-select-10 朝版
+    { taskId: 'task-select-10', type: 'morning', text: 'よく眠れました？○○の肌も労わってあげてくださいね' },
+    { taskId: 'task-select-10', type: 'morning', text: '朝のスキンケア、急いでるとつい雑になっちゃうんですよね。今日はゆっくり、ちょっとだけ丁寧にしてみます？' },
+    { taskId: 'task-select-10', type: 'all', text: '良い香りの化粧水ってありますよね。好きな香りと一緒なら、楽しくケアできそうだとおもいません？' },
+
+    // ⑬ スキンケア（夜）task-select-10 夜版
+    { taskId: 'task-select-10', type: 'night', text: 'お疲れ様です。夜のスキンケア、頑張れそうですか？無理のない範囲で続けましょうね' },
+    { taskId: 'task-select-10', type: 'night', text: '夜のスキンケアって、癒しの時間ですよね。○○の肌が、ゆっくり休めますように。' },
+    { taskId: 'task-select-10', type: 'all', text: '疲れた顔も、優しく触れるだけで少し元気になる気がしますね。○○も、頑張った自分をちゃんと労ってください。' },
+
+    // ④ 間食 task-select-2
+    { taskId: 'task-select-2', type: 'all', text: '間食、我慢できてます？俺は我慢してるけど、昨日夢の中でケーキ食べちゃった…' },
+    { taskId: 'task-select-2', type: 'all', text: '今朝、無意識にスイーツ特集見てました…。キツいのはきっと最初だけですよね！' },
+    { taskId: 'task-select-2', type: 'all', text: '「今日はいいかな」って思う日もありますよね。お互い励ましあいながら頑張りましょう！' },
+    { taskId: 'task-select-2', type: 'all', text: '間食を我慢すると、ごはんがすごくおいしく感じる事に気づきました😊' },
+    { taskId: 'task-select-2', type: 'all', text: '甘い誘惑、来ました？俺もさっき危なかったです。お互いセーフでしたね…！' },
+
+    // ⑤ ストレッチ task-select-7
+    { taskId: 'task-select-7', type: 'afternoon', text: 'やっとお昼ですね。肩凝ってません？軽くストレッチして少し休憩しますか？' },
+    { taskId: 'task-select-7', type: 'night', text: '今日はお昼にストレッチしたおかげで、いつもより肩が楽な気がします。やっぱりこまめに動かすのって大事ですね。○○も、今日一日お疲れ様でした。' },
+    { taskId: 'task-select-7', type: 'all', text: '忙しい中で1分とるって、意外と難しい。でも○○なら、ちゃんとやってそうだなって思います。' },
+    { taskId: 'task-select-7', type: 'all', text: '仕事の合間にぐーっと伸びるだけで、少し目が覚めるんですよね。もうひと頑張りしましょうか！' },
+
+    // ⑥ 階段 task-select-8
+    { taskId: 'task-select-8', type: 'all', text: '今日も階段、選びました？その小さな選択、大きな一歩だと思います。' },
+    { taskId: 'task-select-8', type: 'all', text: '階段を上るっていうだけでもちょっとした眠気ざましになりますね！' },
+    { taskId: 'task-select-8', type: 'all', text: '俺はジム通いって続かなくて…階段使う位なら、続いてます。○○はどうですか？' },
+    { taskId: 'task-select-8', type: 'all', text: 'エレベーター待ってる時間って地味に長く感じませんか？俺ならその時間で階段上っちゃうかも。……なんて、○○ならもう実践してそうですね。' },
+    { taskId: 'task-select-8', type: 'all', text: '階段を上る時の足の重さ、頑張ってる証拠ですよね。俺も負けないように、一段ずつ上ります！' },
+
+    // ⑦ 背筋 task-select-9
+    { taskId: 'task-select-9', type: 'all', text: '背中、気づいたら丸まってません？（俺の事なんですけど😅）ちょっと伸ばして、ついでに深呼吸しましょうか？' },
+    { taskId: 'task-select-9', type: 'all', text: 'ハッ！俺また猫背になってました。○○はどうですか？' },
+    { taskId: 'task-select-9', type: 'all', text: '俺、集中しすぎると、猫背になるみたい…。○○は大丈夫ですか？' },
+    { taskId: 'task-select-9', type: 'all', text: '背筋が伸びている人って、それだけで格好よく見えますよね。○○のシャキッとした姿、想像してます。' },
+    { taskId: 'task-select-9', type: 'all', text: '背筋を伸ばすだけで雰囲気変わるんでしょうか？姿勢を意識してるだけなのに、最近「雰囲気違うね」ってよく言われるようになりました✌️' },
+
+    // ⑧ ハンドケア task-select-11
+    { taskId: 'task-select-11', type: 'all', text: '手って、一番働き者なのにケアを後回しにしちゃいますよね。ハンドクリーム、塗ってあげてくださいね。' },
+    { taskId: 'task-select-11', type: 'all', text: '好きな香りのハンドクリームだと、塗るだけでちょっとリフレッシュしますよね！' },
+    { taskId: 'task-select-11', type: 'all', text: '手のケアってつい面倒でサボっちゃいません？俺は最近やっと皿洗いの時、ゴム手袋付けるようになりました' },
+    { taskId: 'task-select-11', type: 'all', text: 'また、ササクレ出来てた…。つい、剝いてしまって地味に痛くて後悔するんですよね。○○は俺みたいにならないようにクリーム塗ってるといいんですけど…。' },
+    { taskId: 'task-select-11', type: 'all', text: '「ただリップを塗る」だけだと忘れがちなので、眠気覚ましにもなるメントール入りを買ってみました。○○はどんな風に続ける工夫をしてますか？今度教えてくださいね！' },
+
+    // ⑨ 片づけ task-select-5
+    { taskId: 'task-select-5', type: 'all', text: '部屋の片づけ、目の前のもの5つ片づけるだけでも、スッキリするんですよね' },
+    { taskId: 'task-select-5', type: 'all', text: '「1カ所だけ」って、いいルールですよね。完璧じゃなくていいのが続けやすいです。' },
+    { taskId: 'task-select-5', type: 'all', text: '頭使う作業してると、片付けっていう単純作業が気分転換になりますね！' },
+    { taskId: 'task-select-5', type: 'all', text: '片づけてるうちに、頭空っぽになる瞬間ありません？俺、あの時間好きなんです。' },
+    { taskId: 'task-select-5', type: 'all', text: '俺、最近、休憩と片づけがセットになってます。○○は順調ですか？' },
+
+    // ⑩ スマホ休憩 task-select-4
+    { taskId: 'task-select-4', type: 'morning', text: '昨日の夜、早めにスマホを置いて寝たら、今朝はすごく目がスッキリしてて驚きました。やっぱり夜のデジタルデトックスって効果あるんですね。こういう小さくても嬉しい事を共有できるってなんか嬉しいです😊' },
+    { taskId: 'task-select-4', type: 'afternoon', text: '昨日は寝る直前までスマホを見てしまいました。…なので、戒めに昼休憩はスマホなしで外の景色見ながらランチしてみました。○○に連絡するって考えると、夜できなくても「違う時間で工夫しなきゃ」って思えて、完璧じゃなくてもなんとか続いてます！' },
+    { taskId: 'task-select-4', type: 'night', text: 'もう夜ですね。スマホ、楽しいですけど、そろそろ目を休めましょうか' },
+    { taskId: 'task-select-4', type: 'morning', text: '昨日の夜、メッセージを送ったあとにすぐスマホを置いたんですけど、なんだか安心してぐっすり眠れました。○○もよく眠れたかなって、ちょっと気になってます。' },
+    { taskId: 'task-select-4', type: 'afternoon', text: '最近、寝る前のスマホ時間を減らそうと格闘中です。とりあえず、スマホのアラームで起きるのを止めて、目覚まし時計で起きるようにしてみました！' },
+    { taskId: 'task-select-4', type: 'night', text: '○○に送るこのメッセージを最後に、俺はスマホ置きます。○○と同じ時間に休むって思うと、なんか嬉しいです。' },
+    { taskId: 'task-select-4', type: 'all', text: 'スマホを置いて、静かな時間を作るのって贅沢ですよね。ホットアイマスクもあれば最高です。' },
+    { taskId: 'task-select-4', type: 'all', text: '寝る前のスマホタイムが無いのは無理！って前は思ってましたけど、慣れると無い方が快適かも...。○○はどうですか？' },
+    { taskId: 'task-select-4', type: 'all', text: '寝る前のプチデジタルデトックス、順調ですか？俺は、オススメに上がてきた猫動画見たら寝る！って決めてます😺' },
+
+    // ⑪ ありがとう task-select-6
+    { taskId: 'task-select-6', type: 'all', text: '疲れてる日は【"ありがとう"を思い出す】のも大変ですよね。そんな時俺は、毎日動いてくれる自分の体にありがとうって言ってます' },
+    { taskId: 'task-select-6', type: 'all', text: '俺は今、一緒に頑張ってくれる○○に「ありがとう」って言いたい気分です。' },
+    { taskId: 'task-select-6', type: 'all', text: '誰かに感謝できる日って、それだけで幸せですよね。' },
+    { taskId: 'task-select-6', type: 'all', text: '○○が今日「ありがとう」って思った相手、きっと笑顔になってますよ。' },
+    { taskId: 'task-select-6', type: 'all', text: 'ありがとうを思い出せたら、きっと幸せな気持ちで眠れますね。' },
+
+    // ⑫ 深呼吸 task-select-12
+    { taskId: 'task-select-12', type: 'all', text: '疲れてても深呼吸だけしてみますか？ふぅ～。ちょっと力抜けますね！' },
+    { taskId: 'task-select-12', type: 'all', text: '意識してゆっくり息を吐くだけで、今日の疲れが少し抜けますね。○○も一緒にどうですか？' },
+    { taskId: 'task-select-12', type: 'all', text: 'ため息をつくと幸せが逃げる、なんて言いますけど、深呼吸ならセーフです！今、少し試してみません？' },
+    { taskId: 'task-select-12', type: 'all', text: '忙しい時ほど、呼吸が浅くなりません？深呼吸だけでも少しリフレッシュできますね！' },
+    { taskId: 'task-select-12', type: 'all', text: '俺は最近、余裕が無い時程、深呼吸するようになりました。なんか冷静になれるんですよね。' },
+];
+// ===============================================
+// メッセージ表示：サボり検知セリフ
+// ===============================================
+
+const SABORI_DIALOGUES = [
+    { id: 2, text: '俺、今日は自分の目標に全敗しました。○○にメッセージを送る資格、ないかもしれませんね。でも、ダメだったときでも○○なら報告しても受け止めてくれるかな、なんて…。甘えすぎですね💦' },
+    { id: 3, text: '言い辛いんですが、今日は自分のルーティンが全然ダメで…。さっきまで少し落ち込んでました。でも『休むのもセルフケアのうち』ってことで、ゆるく続けるのも俺たちらしいですよね！' },
+    { id: 4, text: '白状します！今日の俺、自分との約束をひとつも守れませんでした…。もし○○も今日は捗らなかったなら、このことは二人だけの秘密にして、明日からまたリスタートしましょう。' },
+    { id: 5, text: '今日は自分のルーティン、どうしてもやる気にならなくて全滅でした…。たまにはこういう日があってもいいですよね。明日、今日できなかった分をちょっとだけ一緒に頑張りませんか？' },
+    { id: 1, text: '…実は俺、今日やろうと思ってた自分のルーティン、一つもできなかったんです。でも一番格好悪い所を知られたくない○○にあえて白状しました。明日から気合い入れるので、懲りずに応援してくれたら嬉しいです。' },
+];
+
+// サボり検知セリフの表示済み管理
+function getSaboriLog() {
+    return JSON.parse(localStorage.getItem('saboriDialogueLog') || '{"shown":[]}');
+}
+
+function saveSaboriLog(log) {
+    localStorage.setItem('saboriDialogueLog', JSON.stringify(log));
+}
+
+// 次に表示すべきサボり検知セリフを1つ返す
+function getNextSaboriDialogue() {
+    const log = getSaboriLog();
+    const shown = log.shown;
+
+    // ②③④⑤が全部出ていない間は①を除外
+    const unlocked2345 = [2, 3, 4, 5].every(id => shown.includes(id));
+    const candidates = SABORI_DIALOGUES.filter(d => {
+        if (d.id === 1 && !unlocked2345) return false;
+        return !shown.includes(d.id);
+    });
+
+    // 全部出し切ったらリセット（①も含めて最初から）
+    if (candidates.length === 0) {
+        log.shown = [];
+        saveSaboriLog(log);
+        return SABORI_DIALOGUES.find(d => d.id === 2);
+    }
+
+    // ランダムで1つ選ぶ
+    const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+    log.shown.push(chosen.id);
+    saveSaboriLog(log);
+    return chosen;
+}
+
+// ===============================================
+// メッセージ表示：セリフプール構築＋抽選
+// ===============================================
+
+function pickDialogue() {
+    const nickname = localStorage.getItem('nickname') || 'あなた';
+    const selectedTaskIds = JSON.parse(localStorage.getItem('selectedTaskIds') || '[]');
+    if (selectedTaskIds.length === 0) return null;
+
+    const slot = getCurrentTimeOfDay();
+
+    // 選択中タスクに紐づくセリフを時間帯で絞り込む
+    const pool = SLOT_DIALOGUES.filter(d => {
+        if (!selectedTaskIds.includes(d.taskId)) return false;
+        if (d.type === 'all') return true;
+        if (slot === 'morning' && d.type === 'morning') return true;
+        if (slot === 'afternoon' && d.type === 'afternoon') return true;
+        if (slot === 'night' && d.type === 'night') return true;
+        return false;
+    });
+
+    // 夜スロット＋その日の完了0件ならサボり検知セリフを混ぜる
+    let finalPool = [...pool];
+    if (slot === 'night') {
+        const completed = getCompletedToday();
+        const isZero = !completed || completed.taskIndices.length === 0;
+        if (isZero) {
+            const saboriDialogue = getNextSaboriDialogue();
+            if (saboriDialogue) {
+                finalPool.push({ taskId: null, type: 'sabori', text: saboriDialogue.text });
+            }
+        }
+    }
+
+    if (finalPool.length === 0) return null;
+
+    // ランダムで1つ抽選
+    const chosen = finalPool[Math.floor(Math.random() * finalPool.length)];
+    return chosen.text.replace(/○○/g, nickname);
+}
+
 function getCurrentTimeOfDay() {
     const currentHour = new Date().getHours();
-    if (currentHour >= 5 && currentHour < 12) {
-        return 'morning'; // 朝 (5:00 - 11:59)
-    } else if (currentHour >= 12 && currentHour < 18) {
-        return 'afternoon'; // 昼 (12:00 - 17:59)
+    if (currentHour >= 4 && currentHour < 11) {
+        return 'morning'; // 朝 (4:00 - 10:59)
+    } else if (currentHour >= 11 && currentHour < 17) {
+        return 'afternoon'; // 昼 (11:00 - 16:59)
     } else {
-        return 'night'; // 夜 (18:00 - 4:59)
+        return 'night'; // 夜 (17:00 - 3:59)
     }
 }
 
@@ -1171,6 +1399,24 @@ const cafeEventData = {
 /**
  * ユーザーが選択中のタスクに対応するセリフをランダムで1つ選んでIINEバナーを表示する
  */
+// ===============================================
+// メッセージ表示：アプリ起動時の呼び出し
+// ===============================================
+
+function showSlotMessage() {
+    // 表示制限チェック
+    if (hasShownInCurrentSlot()) return;
+
+    // セリフ抽選
+    const message = pickDialogue();
+    if (!message) return;
+
+    // 表示済みとして記録
+    markSlotAsShown();
+
+    // バナー表示
+    showFakeNotification('モブ君', message, 'assets/images/mobu_icon_v1.png', 'periodic');
+}
 function showPeriodicIineNotification() {
     const nickname = localStorage.getItem('nickname') || 'あなた';
 

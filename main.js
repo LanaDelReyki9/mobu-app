@@ -144,6 +144,7 @@ document.addEventListener('DOMContentLoaded', function() {
     generateUserId(); //
     initializeNotificationFeatures();
     
+    showSlotMessage();
     checkAbandonment(); 
  
 
