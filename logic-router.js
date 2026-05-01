@@ -1092,8 +1092,7 @@ function hasShownInCurrentSlot() {
     const slot = getCurrentTimeOfDay();
     const today = getGameDate();
 
-    // 夜の6時間ロックチェック
-    if (log.nightLockUntil && Date.now() < log.nightLockUntil) {
+    if (slot === 'night' && log.nightLockUntil && Date.now() < log.nightLockUntil) {
         return true;
     }
 
