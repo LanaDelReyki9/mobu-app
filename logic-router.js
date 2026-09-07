@@ -762,11 +762,6 @@ if (tappedNotificationData && JSON.parse(tappedNotificationData).type === 'retur
 
     showGenericStampReplySelector(function(stampSrc) {
         appendUserStampMessage(stampSrc);
-        setTimeout(() => {
-            playBlinkVideo(() => {
-                showScreen('screen-home');
-            });
-        }, 500);
     });
 
             } else if (tappedNotificationData) {
