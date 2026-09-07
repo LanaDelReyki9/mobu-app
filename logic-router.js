@@ -780,14 +780,9 @@ if (tappedNotificationData && JSON.parse(tappedNotificationData).type === 'retur
 // pendingOneeMessageも削除（二重表示防止）
                localStorage.removeItem('pendingOneeMessage');
                // 5. スタンプが選ばれた時の処理を登録
-               showGenericStampReplySelector(function(stampSrc) {
-                   appendUserStampMessage(stampSrc);
-                   setTimeout(() => {
-                       playBlinkVideo(() => {
-                           showScreen('screen-home');
-                       });
-                   }, 500);
-               });
+                           showGenericStampReplySelector(function(stampSrc) {
+                    appendUserStampMessage(stampSrc);
+                });
 } else if (getPendingBanners().length > 0) {
                 const firstPendingBanner = getPendingBanners()[0];
 markSlotAsTapped(firstPendingBanner.slot, firstPendingBanner.date);
