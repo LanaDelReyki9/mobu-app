@@ -279,6 +279,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (this.disabled) return;
                 const nickname = nicknameInput.value.trim();
                 localStorage.setItem('nickname', nickname);
+                localStorage.setItem('appPhase', 'introduction_start');
                 playBlinkVideo(() => {
                     showScreen('screen-cafe');
                 });
