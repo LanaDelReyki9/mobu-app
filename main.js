@@ -514,8 +514,10 @@ window.startBackButtonGlowFixed = function(elapsedMs = 0) {
                 preloadImage(`assets/cinema/ver${verNum}cinema.webp`);
                 showCinematicScene(verNum, levelNum);
             } else {
-                showScreen('screen-home');
-                showEpilogueReadyPopup();
+                playBlinkVideo(() => {
+                    showScreen('screen-home');
+                    showEpilogueReadyPopup();
+                });
             }
         });
     }
