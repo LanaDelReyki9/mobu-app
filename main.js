@@ -229,21 +229,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 showScreen('screen-home');
                 showEpilogueReadyPopup();
             } else if (nickname) {
-                if (appPhase === 'introduction_task_select') {
-                    showScreen('screen-task-select');
-                } else if (appPhase === 'introduction_motivation') {
-                    localStorage.setItem('appPhase', 'main_loop');
-                    updateHomeTasks();
-                    showScreen('screen-home');
-               } else {
-                    const selectedTasks = localStorage.getItem('selectedTasks');
-                    if (!selectedTasks) {
-                        showScreen('screen-task-select');
-                    } else {
-                        updateHomeTasks();
-                        showScreen('screen-home');
-                    }
-                }
+                showScreen('screen-cafe');
             } else {
                 showScreen('screen-name');
             }
