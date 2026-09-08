@@ -1935,6 +1935,10 @@ const appPhase = localStorage.getItem('appPhase');
                 bgImage.src = cafeImageMap[`${type}_${currentDialogueIndex}`] || '';
             }
 
+            if (type === 'motivation') {
+                localStorage.setItem('motivationProgress', String(currentDialogueIndex));
+            }
+
             return;
         }
 
