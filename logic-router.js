@@ -1894,7 +1894,12 @@ function handleIntroductionDialogue(type) {
     const dialogueText = document.querySelector('#screen-cafe .dialogue-text');
     const bgImage = document.getElementById('cafe-background-image');
     const nickname = localStorage.getItem('nickname') || 'あなた';
-
+const appPhase = localStorage.getItem('appPhase');
+    if (appPhase === 'introduction_task_select' || appPhase === 'introduction_motivation') {
+        type = 'motivation';
+    } else {
+        type = 'start';
+    }
     let dialogues = [];
 
     if (type === 'start') {
