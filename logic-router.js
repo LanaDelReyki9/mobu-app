@@ -831,13 +831,6 @@ replyStamp.parentNode.replaceChild(newReplyStamp, replyStamp);
 newReplyStamp.addEventListener('click', function() {
     // 自身の画像パスを取得して、送信演出を行う
     appendUserStampMessage(newReplyStamp.src);
-
-    // 0.5秒後に瞬き演出を開始
-    setTimeout(() => {
-        playBlinkVideo(() => {
-            showScreen('screen-home');
-        });
-    }, 500); // 0.5秒のディレイ
 }, { once: true });
 
                 // [B] 通常のタスク報告で遷移してきた場合（これまでの処理）
