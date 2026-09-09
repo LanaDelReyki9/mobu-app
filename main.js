@@ -229,7 +229,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 showScreen('screen-home');
                 showEpilogueReadyPopup();
             } else if (nickname) {
-                showScreen('screen-cafe');
+                if (appPhase === 'introduction_task_select' && !localStorage.getItem('selectedTasks')) {
+                    showScreen('screen-task-select');
+                } else {
+                    showScreen('screen-cafe');
+                }
             } else {
                 showScreen('screen-name');
             }
