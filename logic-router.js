@@ -1966,7 +1966,7 @@ const appPhase = localStorage.getItem('appPhase');
                 localStorage.setItem('appPhase', 'main_loop');
                 localStorage.setItem('showFirstHomeBanner', 'true');
                 localStorage.setItem('isBannerRead', 'false');
-
+localStorage.removeItem('motivationProgress');
                 const reportDialogues = [
                     
                     
