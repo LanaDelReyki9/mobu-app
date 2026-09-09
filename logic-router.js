@@ -1884,7 +1884,15 @@ function handleCafeEvent(milestone) {
         }
     };
 }
-
+function getIntroductionPhaseType(appPhase) {
+    if (appPhase === 'introduction_task_select' || appPhase === 'introduction_motivation') {
+        return 'motivation';
+    }
+    if (appPhase === 'main_loop') {
+        return null;
+    }
+    return 'start';
+}
 /**
  * 初回起動時の導入セリフ進行を管理する
  * @param {'start' | 'motivation'} type どちらの導入セリフか
