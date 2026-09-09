@@ -625,6 +625,7 @@ function handleOSNotificationClick(notificationType, message) {
  * アプリ起動時の通知表示を管理する（通常起動時のみ）
  */
 function handleAppLaunchNotification() {
+        if (getTotalTasksCompleted() >= 40) return;
     if (document.visibilityState !== 'visible') return;
 
     const mobuState = getMobuState();
