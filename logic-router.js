@@ -975,12 +975,9 @@ let shouldGlowBackButton = localStorage.getItem('showBackButtonGlow') === 'true'
             const appPhase = localStorage.getItem('appPhase');
 
             // --- 進行状況に応じて、カフェでのイベントを分岐 ---
-            if (appPhase === 'introduction_task_select') {
-                // ★★★ 抜け落ちていた分岐を追加 ★★★
-                // [導入フロー2] タスク選択後の動機付けセリフ
-                handleIntroductionDialogue('motivation');
-            } else if (appPhase === 'introduction_motivation') {
-                handleIntroductionDialogue('motivation');
+            const introPhaseType = getIntroductionPhaseType(appPhase);
+            if (introPhaseType) {
+                handleIntroductionDialogue(introPhaseType);
             } else if (totalTasks >= 10 && totalTasks < 20) {
                 // [通常フロー] 10回達成イベント
                 handleCafeEventWithJIT(10);
@@ -990,10 +987,6 @@ let shouldGlowBackButton = localStorage.getItem('showBackButtonGlow') === 'true'
             } else if (totalTasks >= 30) {
                 // [通常フロー] 30回達成イベント
                 handleCafeEventWithJIT(30);
-            
-            } else {
-                // [導入フロー1] 上記のどれにも当てはまらない場合、最初の導入フェーズと判断
-                handleIntroductionDialogue('start');
             }
 
         } else if (screenId === 'screen-ending') {
