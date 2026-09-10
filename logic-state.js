@@ -178,6 +178,8 @@ function checkAbandonment() {
         } else {
             setMobuState('onee_lv1');
         }
+                    localStorage.removeItem('saboriPendingDialogue');
+            localStorage.removeItem('saboriShownDate');
         console.log(`サボり判定確定: 差分${diffDays}日（サボり${abandonDays}日）。状態: ${getMobuState()}`);
     }
 }
